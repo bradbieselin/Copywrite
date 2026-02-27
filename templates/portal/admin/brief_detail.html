@@ -3,8 +3,9 @@
 
 {% block content %}
 <div class="mb-4">
-  <a href="{{ url_for('portal_admin.dashboard') }}" class="text-muted small text-decoration-none">
-    &larr; Back to Dashboard
+  <a href="{{ url_for('portal_admin.client_detail', client_id=brief.client_id) }}"
+     class="text-muted small text-decoration-none">
+    &larr; Back to {{ brief.client_name }}
   </a>
 </div>
 

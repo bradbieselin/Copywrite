@@ -1,0 +1,88 @@
+{% extends "portal/base.html" %}
+{% block title %}{{ client.name }} — Admin{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="mb-4">
+  <a href="{{ url_for('portal_admin.dashboard') }}" class="text-muted small text-decoration-none">
+    ← Back to Dashboard
+  </a>
+  <div class="d-flex justify-content-between align-items-start mt-2">
+    <div>
+      <h2 class="fw-bold mb-0">{{ client.name }}</h2>
+      <p class="text-muted small mb-0">
+        {{ client.email }}
+        <span class="ms-2 text-muted" style="font-size:.75rem">· Client since {{ client.created_at[:10] }}</span>
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      {% set pending_count     = briefs | selectattr('status', 'equalto', 'pending')     | list | length %}
+      {% set inprog_count      = briefs | selectattr('status', 'equalto', 'in_progress') | list | length %}
+      {% set completed_count   = briefs | selectattr('status', 'equalto', 'completed')   | list | length %}
+      {% if pending_count > 0 %}
+        <span class="badge badge-status-pending rounded-pill" style="font-size:.8rem">
+          {{ pending_count }} Pending
+        </span>
+      {% endif %}
+      {% if inprog_count > 0 %}
+        <span class="badge badge-status-in_progress rounded-pill" style="font-size:.8rem">
+          {{ inprog_count }} In Progress
+        </span>
+      {% endif %}
+      {% if completed_count > 0 %}
+        <span class="badge badge-status-completed rounded-pill" style="font-size:.8rem">
+          {{ completed_count }} Completed
+        </span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Briefs table -->
+{% if briefs %}
+  <div class="card shadow-sm border-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">Brief</th>
+            <th>Type</th>
+            <th>Submitted</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in briefs %}
+            <tr>
+              <td class="ps-4">
+                {{ b.title }}
+                {% if b.draft %}
+                  <span class="badge bg-secondary ms-1" style="font-size:.65rem">draft ready</span>
+                {% endif %}
+              </td>
+              <td class="text-muted small">{{ b.copy_type | capitalize }}</td>
+              <td class="text-muted small">{{ b.created_at[:10] }}</td>
+              <td>
+                <span class="badge badge-status-{{ b.status }} rounded-pill">
+                  {{ b.status | replace('_', ' ') | title }}
+                </span>
+              </td>
+              <td class="pe-4 text-end">
+                <a href="{{ url_for('portal_admin.brief_detail', brief_id=b.id) }}"
+                   class="btn btn-outline-dark btn-sm">View</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="card shadow-sm border-0 text-center py-5">
+    <p class="text-muted mb-0">No briefs submitted yet by this client.</p>
+  </div>
+{% endif %}
+
+{% endblock %}

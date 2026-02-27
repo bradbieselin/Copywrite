@@ -195,6 +195,39 @@ def get_all_clients() -> list[dict]:
         return [dict(r) for r in rows]
 
 
+def get_client(client_id: int) -> dict | None:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT id, name, email, created_at FROM portal_users "
+            "WHERE id = ? AND role = 'client'",
+            (client_id,),
+        ).fetchone()
+        return _row_to_dict(row)
+
+
+def get_clients_with_stats() -> list[dict]:
+    """Return all clients with their brief counts broken down by status."""
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT
+                u.id, u.name, u.email, u.created_at,
+                COUNT(b.id) AS total_briefs,
+                SUM(CASE WHEN b.status = 'pending'     THEN 1 ELSE 0 END) AS pending,
+                SUM(CASE WHEN b.status = 'in_progress' THEN 1 ELSE 0 END) AS in_progress,
+                SUM(CASE WHEN b.status = 'completed'   THEN 1 ELSE 0 END) AS completed
+            FROM   portal_users u
+            LEFT JOIN briefs b ON b.client_id = u.id
+            WHERE  u.role = 'client'
+            GROUP BY u.id
+            ORDER BY u.name
+            """
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
 # ── briefs ────────────────────────────────────────────────────────────────────
 
 def create_brief(client_id: int, form_data: dict) -> int:

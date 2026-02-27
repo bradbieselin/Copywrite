@@ -28,11 +28,25 @@ def _allowed(filename: str) -> bool:
 @admin_bp.route("/")
 @admin_required
 def dashboard():
-    briefs = db_module.get_all_briefs()
-    clients = db_module.get_all_clients()
+    clients = db_module.get_clients_with_stats()
     stats = db_module.get_dashboard_stats()
     return render_template(
-        "portal/admin/dashboard.html", briefs=briefs, clients=clients, stats=stats
+        "portal/admin/dashboard.html", clients=clients, stats=stats
+    )
+
+
+# ── per-client detail ─────────────────────────────────────────────────────────
+
+@admin_bp.route("/clients/<int:client_id>")
+@admin_required
+def client_detail(client_id):
+    client = db_module.get_client(client_id)
+    if not client:
+        flash("Client not found.", "danger")
+        return redirect(url_for("portal_admin.dashboard"))
+    briefs = db_module.get_client_briefs(client_id)
+    return render_template(
+        "portal/admin/client_detail.html", client=client, briefs=briefs
     )
 
 
