@@ -1,9 +1,17 @@
-"""Cold DM Generator — Flask Blueprint."""
+"""Cold DM Generator — Flask Blueprint (admin only)."""
 
 import anthropic
-from flask import Blueprint, render_template, request, current_app
+from flask import Blueprint, render_template, request, current_app, session, redirect, url_for
 
 dm_bp = Blueprint("dm", __name__)
+
+
+@dm_bp.before_request
+def _require_admin():
+    if "user_id" not in session:
+        return redirect(url_for("portal_auth.login", next=request.path))
+    if session.get("user_role") != "admin":
+        return redirect(url_for("portal_auth.login"))
 
 SYSTEM_PROMPT = """\
 You are an expert DTC copywriter and outreach specialist.
@@ -36,7 +44,7 @@ def generate_dm(bio: str, caption: str) -> str:
     return message.content[0].text.strip()
 
 
-@dm_bp.route("/", methods=["GET", "POST"])
+@dm_bp.route("/dm", methods=["GET", "POST"])
 def index():
     dm = None
     error = None

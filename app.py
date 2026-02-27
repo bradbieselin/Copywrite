@@ -1,8 +1,12 @@
 """
 Copywrite — Flask web app suite
-  /              → Cold DM Generator
-  /intake        → Anonymous Copy Generator
-  /portal/login  → Client Portal (login, client dashboard, admin dashboard)
+  /                  → Marketing landing page
+  /tools/dm          → Cold DM Generator       (admin only)
+  /tools/intake      → Copy Generator          (admin only)
+  /tools/proposal    → Proposal Generator      (admin only)
+  /portal/login      → Client Portal login
+  /portal/client/    → Client dashboard
+  /portal/admin/     → Admin dashboard
 """
 
 import os
@@ -30,13 +34,17 @@ def create_app() -> Flask:
     # Base URL used to build deep-links in emails, e.g. https://yourapp.com
     app.config["APP_BASE_URL"]        = os.environ.get("APP_BASE_URL", "http://localhost:5000")
 
-    # Public tools
+    # Landing page
+    from landing import landing_bp
+    app.register_blueprint(landing_bp)
+
+    # Admin-only tools
     from dm import dm_bp
     from intake import intake_bp
     from proposal import proposal_bp
-    app.register_blueprint(dm_bp)
-    app.register_blueprint(intake_bp, url_prefix="/intake")
-    app.register_blueprint(proposal_bp, url_prefix="/proposal")
+    app.register_blueprint(dm_bp, url_prefix="/tools")
+    app.register_blueprint(intake_bp, url_prefix="/tools")
+    app.register_blueprint(proposal_bp, url_prefix="/tools")
 
     # Client portal
     from portal.auth import auth_bp

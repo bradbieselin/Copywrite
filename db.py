@@ -14,7 +14,7 @@ DB_PATH = os.environ.get(
 
 def init_db():
     with sqlite3.connect(DB_PATH) as conn:
-        conn.execute("""
+        conn.executescript("""
             CREATE TABLE IF NOT EXISTS submissions (
                 id                  INTEGER PRIMARY KEY AUTOINCREMENT,
                 created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -28,8 +28,25 @@ def init_db():
                 variation_1         TEXT NOT NULL,
                 variation_2         TEXT NOT NULL,
                 variation_3         TEXT NOT NULL
-            )
+            );
+
+            CREATE TABLE IF NOT EXISTS contact_submissions (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                name       TEXT NOT NULL,
+                email      TEXT NOT NULL,
+                message    TEXT NOT NULL
+            );
         """)
+
+
+def save_contact(name: str, email: str, message: str) -> int:
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.execute(
+            "INSERT INTO contact_submissions (name, email, message) VALUES (?,?,?)",
+            (name.strip(), email.strip(), message.strip()),
+        )
+        return cur.lastrowid
 
 
 def save_submission(data: dict) -> int:

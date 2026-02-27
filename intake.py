@@ -1,11 +1,19 @@
-"""Client Intake Copy Generator — Flask Blueprint."""
+"""Client Intake Copy Generator — Flask Blueprint (admin only)."""
 
 import anthropic
-from flask import Blueprint, render_template, request, current_app
+from flask import Blueprint, render_template, request, current_app, session, redirect, url_for
 
 from db import save_submission
 
 intake_bp = Blueprint("intake", __name__)
+
+
+@intake_bp.before_request
+def _require_admin():
+    if "user_id" not in session:
+        return redirect(url_for("portal_auth.login", next=request.path))
+    if session.get("user_role") != "admin":
+        return redirect(url_for("portal_auth.login"))
 
 TONES = ["professional", "casual", "bold", "friendly"]
 COPY_TYPES = ["email", "Instagram caption", "Facebook ad", "landing page headline"]
@@ -52,7 +60,7 @@ def generate_variations(form_data: dict):
     return parts[:3]
 
 
-@intake_bp.route("/", methods=["GET", "POST"])
+@intake_bp.route("/intake", methods=["GET", "POST"])
 def form():
     error = None
     form_data = {}
