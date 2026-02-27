@@ -77,6 +77,12 @@ def brief_detail(brief_id):
             flash("Brief marked as complete.", "success")
             return redirect(url_for("portal_admin.brief_detail", brief_id=brief_id))
 
+        elif action == "save_draft":
+            draft_text = request.form.get("draft", "").strip()
+            db_module.save_draft(brief_id, draft_text)
+            flash("Draft saved.", "success")
+            return redirect(url_for("portal_admin.brief_detail", brief_id=brief_id))
+
         elif action == "upload_copy":
             if "copy_file" not in request.files or request.files["copy_file"].filename == "":
                 error = "No file selected."

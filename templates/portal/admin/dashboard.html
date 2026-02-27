@@ -12,6 +12,46 @@
   </button>
 </div>
 
+<!-- AI Tools quick-access -->
+<div class="mb-5">
+  <h5 class="fw-bold mb-3">AI Tools</h5>
+  <div class="row g-3">
+    <div class="col-sm-4">
+      <a href="/tools/intake" class="card shadow-sm border-0 text-decoration-none tool-card h-100">
+        <div class="card-body p-3 d-flex align-items-center gap-3">
+          <span style="font-size:1.5rem">✍️</span>
+          <div>
+            <div class="fw-semibold text-dark" style="font-size:.9rem">Copy Generator</div>
+            <div class="text-muted" style="font-size:.78rem">Generate ad &amp; email copy from a brief</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-sm-4">
+      <a href="/tools/dm" class="card shadow-sm border-0 text-decoration-none tool-card h-100">
+        <div class="card-body p-3 d-flex align-items-center gap-3">
+          <span style="font-size:1.5rem">💬</span>
+          <div>
+            <div class="fw-semibold text-dark" style="font-size:.9rem">Cold DM Generator</div>
+            <div class="text-muted" style="font-size:.78rem">Write outreach DMs from an Instagram profile</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-sm-4">
+      <a href="/tools/proposal" class="card shadow-sm border-0 text-decoration-none tool-card h-100">
+        <div class="card-body p-3 d-flex align-items-center gap-3">
+          <span style="font-size:1.5rem">📄</span>
+          <div>
+            <div class="fw-semibold text-dark" style="font-size:.9rem">Proposal Generator</div>
+            <div class="text-muted" style="font-size:.78rem">Create a client proposal in seconds</div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
 <!-- Stats strip -->
 <div class="row g-3 mb-5">
   <div class="col-sm-4">
@@ -139,7 +179,7 @@
 </div>
 
 <style>
-  .client-card { transition: box-shadow .15s, transform .15s; }
-  .client-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.1) !important; transform: translateY(-2px); }
+  .client-card, .tool-card { transition: box-shadow .15s, transform .15s; }
+  .client-card:hover, .tool-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.1) !important; transform: translateY(-2px); }
 </style>
 {% endblock %}
