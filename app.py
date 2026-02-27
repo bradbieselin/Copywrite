@@ -22,6 +22,13 @@ def create_app() -> Flask:
     # Limit uploaded files to 16 MB
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
 
+    # SendGrid email notifications (optional — automation skips if unset)
+    app.config["SENDGRID_API_KEY"]    = os.environ.get("SENDGRID_API_KEY", "")
+    app.config["SENDGRID_FROM_EMAIL"] = os.environ.get("SENDGRID_FROM_EMAIL", "")
+    app.config["ADMIN_EMAIL"]         = os.environ.get("ADMIN_EMAIL", "")
+    # Base URL used to build deep-links in emails, e.g. https://yourapp.com
+    app.config["APP_BASE_URL"]        = os.environ.get("APP_BASE_URL", "http://localhost:5000")
+
     # Public tools
     from dm import dm_bp
     from intake import intake_bp

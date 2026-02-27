@@ -28,8 +28,9 @@ def _allowed(filename: str) -> bool:
 def dashboard():
     briefs = db_module.get_all_briefs()
     clients = db_module.get_all_clients()
+    stats = db_module.get_dashboard_stats()
     return render_template(
-        "portal/admin/dashboard.html", briefs=briefs, clients=clients
+        "portal/admin/dashboard.html", briefs=briefs, clients=clients, stats=stats
     )
 
 

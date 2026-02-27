@@ -1,6 +1,7 @@
 """Client-facing portal Blueprint."""
 
 import os
+import threading
 
 from flask import (
     Blueprint, render_template, request, redirect,
@@ -11,6 +12,28 @@ import db as db_module
 from portal.auth import login_required
 
 client_bp = Blueprint("portal_client", __name__)
+
+
+def _start_automation(brief_id: int, app) -> None:
+    """
+    Fetch the saved brief and run the full automation pipeline in a
+    daemon thread so the client request returns immediately.
+    The thread captures everything it needs — no Flask context required.
+    """
+    from portal.automation import run_brief_automation
+
+    brief = db_module.get_brief(brief_id)
+    config = {
+        k: app.config.get(k, "")
+        for k in ("ANTHROPIC_API_KEY", "SENDGRID_API_KEY",
+                  "SENDGRID_FROM_EMAIL", "ADMIN_EMAIL", "APP_BASE_URL")
+    }
+
+    def _run():
+        run_brief_automation(brief, config)
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
 
 TONES = ["professional", "casual", "bold", "friendly"]
 COPY_TYPES = ["email", "Instagram caption", "Facebook ad", "landing page headline"]
@@ -46,6 +69,7 @@ def new_brief():
             error = "Invalid copy type selection."
         else:
             brief_id = db_module.create_brief(session["user_id"], form_data)
+            _start_automation(brief_id, current_app)
             flash("Brief submitted! We'll be in touch.", "success")
             return redirect(url_for("portal_client.brief_detail", brief_id=brief_id))
 

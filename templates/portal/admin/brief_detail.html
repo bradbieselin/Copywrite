@@ -80,6 +80,33 @@
       </div>
     </div>
 
+    <!-- auto-generated first draft -->
+    <div class="card shadow-sm border-0 mb-3">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h6 class="fw-bold text-uppercase text-muted small mb-0">Auto-Generated First Draft</h6>
+          {% if brief.draft %}
+            <span class="badge bg-secondary" style="font-size:.7rem">AI draft</span>
+          {% endif %}
+        </div>
+
+        {% if brief.draft %}
+          <div class="p-3 rounded" style="background:#f8f9fa;font-size:.95rem;
+               line-height:1.7;white-space:pre-wrap;font-family:inherit">{{ brief.draft }}</div>
+          <p class="text-muted small mt-2 mb-0">
+            Generated automatically when the brief was submitted. Edit as needed before delivering.
+          </p>
+        {% elif brief.status == 'pending' %}
+          <p class="text-muted small mb-0">
+            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+            Draft is being generated — refresh in a moment.
+          </p>
+        {% else %}
+          <p class="text-muted small mb-0">No draft was generated for this brief.</p>
+        {% endif %}
+      </div>
+    </div>
+
     <!-- brief details -->
     <div class="card shadow-sm border-0">
       <div class="card-body p-4">
