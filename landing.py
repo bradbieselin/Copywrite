@@ -7,7 +7,7 @@ import db as db_module
 
 landing_bp = Blueprint("landing", __name__)
 
-_PHOTO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "images", "headshot1.png")
+_PHOTO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "images", "headshot1.jpg")
 
 
 @landing_bp.route("/")
