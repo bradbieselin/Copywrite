@@ -4,43 +4,72 @@ Searches hashtags to find DTC ecommerce brand profiles and saves them to leads.c
 
 Two-phase approach:
   Phase 1 — Scrape hashtag posts to collect unique author usernames.
-  Phase 2 — Scrape each profile URL for full details (followers, bio, website, etc.).
+  Phase 2 — Scrape each profile URL for full details (followers, bio, etc.)
+             and filter to business/brand accounts only.
+
+Usage:
+  python instagram_dtc_scraper.py
+  python instagram_dtc_scraper.py --hashtags dtcbrand shopify ecommerce --max-results 100
+  python instagram_dtc_scraper.py --output my_leads.csv
 """
 
+import argparse
 import csv
 import os
-import time
 import sys
+import time
+
 from apify_client import ApifyClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # ---------------------------------------------------------------------------
-# Configuration
+# Defaults (all overridable via CLI)
 # ---------------------------------------------------------------------------
 
-APIFY_API_TOKEN = os.environ.get("APIFY_API_TOKEN", "")
-
-# Hashtags to search (without the # symbol)
-HASHTAGS = [
-    "dtcbrand",
-    "skincare",
-    "supplements",
-    "fitness",
-]
-
-# Follower count filter range
+DEFAULT_HASHTAGS = ["dtcbrand", "shopifybrand", "ecommerce"]
 MIN_FOLLOWERS = 5_000
 MAX_FOLLOWERS = 500_000
+DEFAULT_OUTPUT = "leads.csv"
+DEFAULT_MAX_RESULTS = 200
 
-OUTPUT_FILE = "leads.csv"
-
-# Official Apify Instagram Scraper actor
 ACTOR_ID = "apify/instagram-scraper"
-
-# How many profile URLs to pass to the actor in one batch.
-# Keeps individual runs from timing out on very large username sets.
 PROFILE_BATCH_SIZE = 50
 
-CSV_FIELDS = ["username", "follower_count", "bio", "website_url", "post_count"]
+CSV_FIELDS = ["username", "full_name", "follower_count", "bio", "profile_url", "hashtag"]
+
+
+# ---------------------------------------------------------------------------
+# CLI
+# ---------------------------------------------------------------------------
+
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Scrape Instagram for DTC brand accounts via Apify.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
+    p.add_argument(
+        "--hashtags",
+        nargs="+",
+        default=DEFAULT_HASHTAGS,
+        metavar="TAG",
+        help="Hashtags to search (without #).",
+    )
+    p.add_argument(
+        "--max-results",
+        type=int,
+        default=DEFAULT_MAX_RESULTS,
+        metavar="N",
+        help="Max posts to scrape per hashtag.",
+    )
+    p.add_argument(
+        "--output",
+        default=DEFAULT_OUTPUT,
+        metavar="FILE",
+        help="Output CSV file path.",
+    )
+    return p.parse_args()
 
 
 # ---------------------------------------------------------------------------
@@ -50,16 +79,15 @@ CSV_FIELDS = ["username", "follower_count", "bio", "website_url", "post_count"]
 def validate_token(token: str) -> None:
     if not token:
         print(
-            "ERROR: APIFY_API_TOKEN environment variable is not set.\n"
-            "Export your token before running:\n"
-            "  export APIFY_API_TOKEN='your_token_here'"
+            "ERROR: APIFY_API_TOKEN is not set.\n"
+            "Add it to a .env file or export it in your shell:\n"
+            "  export APIFY_API_TOKEN='your_token_here'\n"
+            "See .env.example for the required variables."
         )
         sys.exit(1)
 
 
 def safe_int(value) -> int:
-    """Convert a value to int, returning 0 on any failure."""
-    # FIX 6: unsafe int() calls previously had no error handling.
     try:
         return int(value)
     except (TypeError, ValueError):
@@ -67,15 +95,12 @@ def safe_int(value) -> int:
 
 
 def _actor_call(client: ApifyClient, run_input: dict, context: str) -> dict:
-    """
-    Call an Apify actor and return the run object.
-    FIX 3: actor.call() can return None on failure; raise explicitly instead of
-    letting a later KeyError/TypeError obscure the real problem.
-    """
     run = client.actor(ACTOR_ID).call(run_input=run_input)
     if run is None:
-        raise RuntimeError(f"Apify actor run returned None ({context}). "
-                           "Check your API token and actor ID.")
+        raise RuntimeError(
+            f"Apify actor returned None ({context}). "
+            "Check your API token and actor ID."
+        )
     return run
 
 
@@ -83,22 +108,15 @@ def _actor_call(client: ApifyClient, run_input: dict, context: str) -> dict:
 # Phase 1: collect usernames from hashtag posts
 # ---------------------------------------------------------------------------
 
-def collect_usernames_for_hashtag(client: ApifyClient, hashtag: str) -> set[str]:
-    """
-    Scrape posts for a hashtag and return the set of unique author usernames.
-
-    FIX 1 & 2: The original code passed 'addParentData=True' (not a real field)
-    and expected full profile fields (ownerFollowersCount etc.) to appear on post
-    records — they don't. We now only extract the username here and fetch full
-    profile data in Phase 2.
-    """
+def collect_usernames_for_hashtag(
+    client: ApifyClient, hashtag: str, max_results: int
+) -> set[str]:
     print(f"  Phase 1 — scraping posts for #{hashtag} ...")
     run_input = {
         "hashtags": [hashtag],
         "resultsType": "posts",
-        "resultsLimit": 200,
+        "resultsLimit": max_results,
     }
-
     run = _actor_call(client, run_input, f"hashtag #{hashtag}")
 
     usernames: set[str] = set()
@@ -117,51 +135,46 @@ def collect_usernames_for_hashtag(client: ApifyClient, hashtag: str) -> set[str]
 # ---------------------------------------------------------------------------
 
 def fetch_profiles_batch(client: ApifyClient, usernames: list[str]) -> list[dict]:
-    """
-    Scrape full profile details for a batch of usernames.
-    Uses resultsType='details' on direct profile URLs to get follower count,
-    biography, external URL, and post count.
-    """
     profile_urls = [f"https://www.instagram.com/{u}/" for u in usernames]
     run_input = {
         "directUrls": profile_urls,
         "resultsType": "details",
         "resultsLimit": 1,
     }
-
     run = _actor_call(client, run_input, f"profile batch ({len(usernames)} accounts)")
-
     return list(client.dataset(run["defaultDatasetId"]).iterate_items())
 
 
-def extract_profile(item: dict) -> dict | None:
-    """
-    Build a clean profile dict from a 'details' result item.
+def is_business_account(item: dict) -> bool:
+    """Return True if Apify marks this profile as a business or creator account."""
+    if item.get("isBusinessAccount"):
+        return True
+    if item.get("businessCategoryName"):
+        return True
+    # Some actor versions expose accountType: "Business" / "Creator" / "Personal"
+    account_type = (item.get("accountType") or "").lower()
+    return account_type in ("business", "creator")
 
-    FIX 4 & 5: The original code used 'or' chains which silently skip a value
-    of 0 (falsy), and fell back to 'likesCount' (a post metric) as a follower
-    count proxy. We now use explicit 'is not None' checks and remove the
-    likesCount fallback entirely.
-    """
-    username = (item.get("username") or item.get("ownerUsername") or "").strip()
+
+def extract_profile(item: dict, source_hashtag: str) -> dict | None:
+    username = (item.get("username") or item.get("ownerUsername") or "").strip().lstrip("@")
     if not username:
         return None
 
     raw_followers = item.get("followersCount")
     follower_count = safe_int(raw_followers) if raw_followers is not None else 0
 
-    raw_posts = item.get("postsCount")
-    post_count = safe_int(raw_posts) if raw_posts is not None else 0
-
+    full_name = (item.get("fullName") or "").strip()
     bio = (item.get("biography") or "").replace("\n", " ").strip()
-    website_url = (item.get("externalUrl") or "").strip()
+    profile_url = f"https://www.instagram.com/{username}/"
 
     return {
-        "username": username.lstrip("@"),
+        "username": username,
+        "full_name": full_name,
         "follower_count": follower_count,
         "bio": bio,
-        "website_url": website_url,
-        "post_count": post_count,
+        "profile_url": profile_url,
+        "hashtag": source_hashtag,
     }
 
 
@@ -178,7 +191,7 @@ def save_to_csv(profiles: list[dict], filepath: str) -> None:
         writer = csv.DictWriter(f, fieldnames=CSV_FIELDS)
         writer.writeheader()
         writer.writerows(profiles)
-    print(f"\nSaved {len(profiles)} profiles to {filepath}")
+    print(f"Saved {len(profiles)} lead{'s' if len(profiles) != 1 else ''} to {filepath}")
 
 
 # ---------------------------------------------------------------------------
@@ -186,69 +199,106 @@ def save_to_csv(profiles: list[dict], filepath: str) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    validate_token(APIFY_API_TOKEN)
+    args = parse_args()
 
-    client = ApifyClient(APIFY_API_TOKEN)
+    token = os.environ.get("APIFY_API_TOKEN", "")
+    validate_token(token)
 
-    # ---- Phase 1: collect unique usernames across all hashtags ----
-    all_usernames: set[str] = set()
+    client = ApifyClient(token)
 
-    for hashtag in HASHTAGS:
+    # Strip any leading # the user may have included
+    hashtags = [h.lstrip("#") for h in args.hashtags]
+
+    print(f"\nSearching {len(hashtags)} hashtag(s): {', '.join('#' + h for h in hashtags)}")
+    print(f"Follower range: {MIN_FOLLOWERS:,} – {MAX_FOLLOWERS:,}")
+    print(f"Max posts per hashtag: {args.max_results}\n")
+
+    # ---- Phase 1: collect usernames, tracking first-seen hashtag ----
+    # username -> first hashtag it was discovered under
+    username_to_hashtag: dict[str, str] = {}
+
+    for hashtag in hashtags:
         try:
-            usernames = collect_usernames_for_hashtag(client, hashtag)
-            all_usernames |= usernames
+            found = collect_usernames_for_hashtag(client, hashtag, args.max_results)
+            for u in found:
+                if u not in username_to_hashtag:
+                    username_to_hashtag[u] = hashtag
         except Exception as exc:
             print(f"  WARNING: failed to scrape #{hashtag}: {exc}")
         time.sleep(2)
 
-    print(f"\nTotal unique accounts across all hashtags: {len(all_usernames)}")
+    total_unique = len(username_to_hashtag)
+    print(f"\nTotal unique accounts across all hashtags: {total_unique}")
 
-    if not all_usernames:
+    if not username_to_hashtag:
         print("No accounts found. Check your hashtags and API token.")
-        save_to_csv([], OUTPUT_FILE)
+        save_to_csv([], args.output)
         return
 
     # ---- Phase 2: fetch full profile details in batches ----
-    username_list = sorted(all_usernames)
+    username_list = sorted(username_to_hashtag.keys())
     raw_profiles: list[dict] = []
+    business_count = 0
+    skipped_personal = 0
+
+    total_batches = (len(username_list) + PROFILE_BATCH_SIZE - 1) // PROFILE_BATCH_SIZE
 
     for i in range(0, len(username_list), PROFILE_BATCH_SIZE):
-        batch = username_list[i : i + PROFILE_BATCH_SIZE]
+        batch = username_list[i: i + PROFILE_BATCH_SIZE]
         batch_num = i // PROFILE_BATCH_SIZE + 1
-        total_batches = (len(username_list) + PROFILE_BATCH_SIZE - 1) // PROFILE_BATCH_SIZE
-        print(f"  Phase 2 — fetching profile details "
-              f"(batch {batch_num}/{total_batches}, {len(batch)} accounts) ...")
+        print(
+            f"  Phase 2 — fetching profile details "
+            f"(batch {batch_num}/{total_batches}, {len(batch)} accounts) ..."
+        )
         try:
             items = fetch_profiles_batch(client, batch)
             for item in items:
-                profile = extract_profile(item)
+                if not is_business_account(item):
+                    skipped_personal += 1
+                    continue
+                business_count += 1
+                source_tag = username_to_hashtag.get(
+                    (item.get("username") or "").lower(), hashtags[0]
+                )
+                profile = extract_profile(item, source_tag)
                 if profile:
                     raw_profiles.append(profile)
         except Exception as exc:
             print(f"  WARNING: profile batch {batch_num} failed: {exc}")
         time.sleep(2)
 
-    print(f"Profile details retrieved: {len(raw_profiles)}")
+    # ---- Apply follower range filter ----
+    follower_filtered = [p for p in raw_profiles if in_follower_range(p)]
 
-    # ---- Filter by follower count ----
-    filtered = [p for p in raw_profiles if in_follower_range(p)]
-    print(
-        f"Accounts after follower filter "
-        f"({MIN_FOLLOWERS:,} – {MAX_FOLLOWERS:,}): {len(filtered)}"
-    )
-
-    if not filtered:
-        print(
-            "No accounts matched the filter criteria. "
-            "Try broadening the hashtag list or adjusting the follower range."
-        )
-        save_to_csv([], OUTPUT_FILE)
-        return
+    # ---- Deduplicate (shouldn't happen, but be safe) ----
+    seen: set[str] = set()
+    final: list[dict] = []
+    for p in follower_filtered:
+        if p["username"] not in seen:
+            seen.add(p["username"])
+            final.append(p)
 
     # Sort by follower count descending for easy review
-    filtered.sort(key=lambda p: p["follower_count"], reverse=True)
+    final.sort(key=lambda p: p["follower_count"], reverse=True)
 
-    save_to_csv(filtered, OUTPUT_FILE)
+    save_to_csv(final, args.output)
+
+    # ---- Summary ----
+    print()
+    print("=" * 50)
+    print("  SUMMARY")
+    print("=" * 50)
+    print(f"  Hashtags searched      : {len(hashtags)}")
+    print(f"  Unique accounts found  : {total_unique}")
+    print(f"  Personal (skipped)     : {skipped_personal}")
+    print(f"  Business/creator accts : {business_count}")
+    print(
+        f"  After follower filter  : {len(follower_filtered)}"
+        f"  ({MIN_FOLLOWERS:,}–{MAX_FOLLOWERS:,})"
+    )
+    print(f"  Leads saved            : {len(final)}")
+    print(f"  Output file            : {args.output}")
+    print("=" * 50)
 
 
 if __name__ == "__main__":
