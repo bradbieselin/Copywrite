@@ -347,9 +347,10 @@
         aspect-ratio: 1 / 1;
       }
 
-      nav { padding: 0 1rem; overflow: visible; }
-      .nav-links { display: none; }
-      .nav-mobile-right {
+      nav { padding: 0 1rem; }
+      /* Higher specificity (0-1-1) beats the base .nav-links rule (0-1-0) */
+      nav .nav-links { display: none; }
+      nav .nav-mobile-right {
         display: flex;
         align-items: center;
         gap: .6rem;
@@ -475,6 +476,7 @@
     (function () {
       var btn  = document.getElementById('hamburger');
       var menu = document.getElementById('mobileMenu');
+      if (!btn || !menu) return; // guard: elements must exist
 
       function openMenu() {
         menu.classList.add('open');
