@@ -16,8 +16,9 @@ def create_app() -> Flask:
 
     app.config["ANTHROPIC_API_KEY"] = os.environ.get("ANTHROPIC_API_KEY", "")
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-prod")
-    app.config["UPLOAD_FOLDER"] = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "uploads"
+    app.config["UPLOAD_FOLDER"] = os.environ.get(
+        "UPLOAD_FOLDER",
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads"),
     )
     # Limit uploaded files to 16 MB
     app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
