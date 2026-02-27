@@ -640,3 +640,154 @@ class TestAdminBriefDetailDraft:
         db_module.save_draft(bid, "Some copy")
         r = admin_http_with_db.get("/portal/admin/")
         assert b"draft ready" in r.data
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# send_completion_notification
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestSendCompletionNotification:
+
+    _brief = {
+        "id": 42,
+        "title": "Launch Email",
+        "client_name": "Alice Brand",
+        "client_email": "alice@brand.com",
+    }
+    _cfg = {
+        "SENDGRID_API_KEY": "SG.testkey",
+        "SENDGRID_FROM_EMAIL": "you@copywrite.io",
+        "APP_BASE_URL": "https://app.example.com",
+    }
+
+    def _mock_urlopen(self):
+        ctx = MagicMock()
+        ctx.__enter__ = lambda s: s
+        ctx.__exit__ = MagicMock(return_value=False)
+        ctx.status = 202
+        return ctx
+
+    def test_sends_to_client_email(self):
+        with patch("portal.automation.urllib.request.urlopen",
+                   return_value=self._mock_urlopen()) as mock_open:
+            automation.send_completion_notification(self._brief, self._cfg)
+        req = mock_open.call_args[0][0]
+        payload = json.loads(req.data.decode())
+        assert payload["personalizations"][0]["to"][0]["email"] == "alice@brand.com"
+
+    def test_uses_from_email(self):
+        with patch("portal.automation.urllib.request.urlopen",
+                   return_value=self._mock_urlopen()) as mock_open:
+            automation.send_completion_notification(self._brief, self._cfg)
+        req = mock_open.call_args[0][0]
+        payload = json.loads(req.data.decode())
+        assert payload["from"]["email"] == "you@copywrite.io"
+
+    def test_subject_includes_brief_title(self):
+        with patch("portal.automation.urllib.request.urlopen",
+                   return_value=self._mock_urlopen()) as mock_open:
+            automation.send_completion_notification(self._brief, self._cfg)
+        req = mock_open.call_args[0][0]
+        payload = json.loads(req.data.decode())
+        assert "Launch Email" in payload["subject"]
+
+    def test_email_body_contains_client_name(self):
+        with patch("portal.automation.urllib.request.urlopen",
+                   return_value=self._mock_urlopen()) as mock_open:
+            automation.send_completion_notification(self._brief, self._cfg)
+        req = mock_open.call_args[0][0]
+        payload = json.loads(req.data.decode())
+        assert "Alice Brand" in payload["content"][0]["value"]
+
+    def test_email_body_contains_portal_link(self):
+        with patch("portal.automation.urllib.request.urlopen",
+                   return_value=self._mock_urlopen()) as mock_open:
+            automation.send_completion_notification(self._brief, self._cfg)
+        req = mock_open.call_args[0][0]
+        payload = json.loads(req.data.decode())
+        assert "portal/client/briefs/42" in payload["content"][0]["value"]
+
+    def test_skips_when_no_api_key(self):
+        cfg = dict(self._cfg, SENDGRID_API_KEY="")
+        with patch("portal.automation.urllib.request.urlopen") as mock_open:
+            automation.send_completion_notification(self._brief, cfg)
+        mock_open.assert_not_called()
+
+    def test_skips_when_no_client_email(self):
+        brief = dict(self._brief, client_email="")
+        with patch("portal.automation.urllib.request.urlopen") as mock_open:
+            automation.send_completion_notification(brief, self._cfg)
+        mock_open.assert_not_called()
+
+    def test_skips_when_no_from_email(self):
+        cfg = dict(self._cfg, SENDGRID_FROM_EMAIL="")
+        with patch("portal.automation.urllib.request.urlopen") as mock_open:
+            automation.send_completion_notification(self._brief, cfg)
+        mock_open.assert_not_called()
+
+    def test_raises_on_http_error(self):
+        exc = urllib.error.HTTPError(
+            url="", code=400, msg="Bad Request",
+            hdrs=None, fp=io.BytesIO(b"error body")
+        )
+        with patch("portal.automation.urllib.request.urlopen", side_effect=exc):
+            with pytest.raises(RuntimeError, match="SendGrid HTTP 400"):
+                automation.send_completion_notification(self._brief, self._cfg)
+
+    def test_uses_bearer_auth_header(self):
+        with patch("portal.automation.urllib.request.urlopen",
+                   return_value=self._mock_urlopen()) as mock_open:
+            automation.send_completion_notification(self._brief, self._cfg)
+        req = mock_open.call_args[0][0]
+        assert req.get_header("Authorization") == "Bearer SG.testkey"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# mark_complete fires completion notification in admin
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestMarkCompleteNotification:
+
+    @pytest.fixture
+    def admin_http_with_db(self, flask_app):
+        with flask_app.test_client() as c:
+            c.post("/portal/login",
+                   data={"email": "admin@copywrite.io", "password": "admin123"})
+            yield c
+
+    def _create_brief(self):
+        uid = db_module.create_user("Notify Test", "notify@test.com", "pass1234", "client")
+        return db_module.create_brief(uid, {
+            "title": "Notify Brief", "product_name": "P",
+            "product_description": "D", "target_audience": "A",
+            "main_benefit": "B", "biggest_objection": "C",
+            "tone": "casual", "copy_type": "email", "notes": "",
+        })
+
+    def test_mark_complete_spawns_notification_thread(
+        self, admin_http_with_db, flask_app
+    ):
+        bid = self._create_brief()
+        with patch("portal.admin.threading.Thread") as mock_thread_cls:
+            mock_t = MagicMock()
+            mock_thread_cls.return_value = mock_t
+            admin_http_with_db.post(f"/portal/admin/briefs/{bid}",
+                                    data={"action": "mark_complete"})
+        mock_thread_cls.assert_called_once()
+        mock_t.start.assert_called_once()
+
+    def test_upload_copy_spawns_notification_thread(
+        self, admin_http_with_db, flask_app
+    ):
+        bid = self._create_brief()
+        with patch("portal.admin.threading.Thread") as mock_thread_cls:
+            mock_t = MagicMock()
+            mock_thread_cls.return_value = mock_t
+            admin_http_with_db.post(
+                f"/portal/admin/briefs/{bid}",
+                data={"action": "upload_copy",
+                      "copy_file": (io.BytesIO(b"content"), "copy.txt")},
+                content_type="multipart/form-data",
+            )
+        mock_thread_cls.assert_called_once()
+        mock_t.start.assert_called_once()

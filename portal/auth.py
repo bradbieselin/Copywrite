@@ -1,5 +1,6 @@
 """Portal authentication — login, logout, and route decorators."""
 
+import time
 from functools import wraps
 from urllib.parse import urlparse, urljoin
 
@@ -12,6 +13,35 @@ from werkzeug.security import check_password_hash
 import db as db_module
 
 auth_bp = Blueprint("portal_auth", __name__)
+
+# ── rate limiting ─────────────────────────────────────────────────────────────
+# { email_lower: {"count": int, "first_at": float} }
+_FAILED_LOGINS: dict = {}
+_MAX_ATTEMPTS  = 5
+_LOCKOUT_SECS  = 15 * 60   # 15 minutes
+
+
+def _is_locked_out(email: str) -> bool:
+    entry = _FAILED_LOGINS.get(email)
+    if not entry:
+        return False
+    if time.time() - entry["first_at"] > _LOCKOUT_SECS:
+        _FAILED_LOGINS.pop(email, None)
+        return False
+    return entry["count"] >= _MAX_ATTEMPTS
+
+
+def _record_failure(email: str) -> None:
+    entry = _FAILED_LOGINS.get(email)
+    now = time.time()
+    if not entry or (now - entry["first_at"] > _LOCKOUT_SECS):
+        _FAILED_LOGINS[email] = {"count": 1, "first_at": now}
+    else:
+        entry["count"] += 1
+
+
+def _clear_failures(email: str) -> None:
+    _FAILED_LOGINS.pop(email, None)
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────
@@ -65,19 +95,28 @@ def login():
     if request.method == "POST":
         email = request.form.get("email", "").strip().lower()
         password = request.form.get("password", "")
-        user = db_module.get_user_by_email(email)
 
-        if user and check_password_hash(user["password_hash"], password):
-            session.clear()
-            session["user_id"] = user["id"]
-            session["user_name"] = user["name"]
-            session["user_role"] = user["role"]
-            session["user_email"] = user["email"]
-            if user["role"] == "admin":
-                return redirect(_next_url(url_for("portal_admin.dashboard")))
-            return redirect(_next_url(url_for("portal_client.dashboard")))
+        if _is_locked_out(email):
+            error = (
+                "Too many failed attempts. "
+                "Please wait 15 minutes before trying again."
+            )
+        else:
+            user = db_module.get_user_by_email(email)
 
-        error = "Invalid email or password."
+            if user and check_password_hash(user["password_hash"], password):
+                _clear_failures(email)
+                session.clear()
+                session["user_id"] = user["id"]
+                session["user_name"] = user["name"]
+                session["user_role"] = user["role"]
+                session["user_email"] = user["email"]
+                if user["role"] == "admin":
+                    return redirect(_next_url(url_for("portal_admin.dashboard")))
+                return redirect(_next_url(url_for("portal_client.dashboard")))
+
+            _record_failure(email)
+            error = "Invalid email or password."
 
     return render_template("portal/login.html", error=error)
 

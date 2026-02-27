@@ -743,3 +743,150 @@ class TestAdminRoutes:
     def test_brief_not_found_redirects_to_dashboard(self, admin_client):
         r = admin_client.get("/portal/admin/briefs/99999", follow_redirects=True)
         assert b"Brief not found" in r.data
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Admin settings / change password
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestAdminSettings:
+
+    def test_settings_page_returns_200(self, admin_client):
+        r = admin_client.get("/portal/admin/settings")
+        assert r.status_code == 200
+
+    def test_settings_page_shows_form(self, admin_client):
+        r = admin_client.get("/portal/admin/settings")
+        html = r.data.decode()
+        assert 'name="current_password"' in html
+        assert 'name="new_password"' in html
+        assert 'name="confirm_password"' in html
+
+    def test_settings_page_in_navbar(self, admin_client):
+        r = admin_client.get("/portal/admin/")
+        assert b"Settings" in r.data
+
+    def test_change_password_success(self, admin_client, flask_app):
+        r = admin_client.post("/portal/admin/settings", data={
+            "current_password": "admin123",
+            "new_password": "newpassword99",
+            "confirm_password": "newpassword99",
+        })
+        assert r.status_code in (200, 302)
+        # Verify new hash in DB
+        user = db_module.get_user_by_email("admin@copywrite.io")
+        from werkzeug.security import check_password_hash
+        assert check_password_hash(user["password_hash"], "newpassword99")
+
+    def test_change_password_success_shows_confirmation(self, admin_client):
+        r = admin_client.post("/portal/admin/settings", data={
+            "current_password": "admin123",
+            "new_password": "newpassword99",
+            "confirm_password": "newpassword99",
+        })
+        html = r.data.decode()
+        assert "updated" in html.lower() or r.status_code == 302
+
+    def test_wrong_current_password_rejected(self, admin_client, flask_app):
+        r = admin_client.post("/portal/admin/settings", data={
+            "current_password": "wrongcurrentpass",
+            "new_password": "newpassword99",
+            "confirm_password": "newpassword99",
+        })
+        assert b"incorrect" in r.data.lower() or b"wrong" in r.data.lower() or b"Current password" in r.data
+        user = db_module.get_user_by_email("admin@copywrite.io")
+        from werkzeug.security import check_password_hash
+        assert check_password_hash(user["password_hash"], "admin123")
+
+    def test_short_new_password_rejected(self, admin_client):
+        r = admin_client.post("/portal/admin/settings", data={
+            "current_password": "admin123",
+            "new_password": "short",
+            "confirm_password": "short",
+        })
+        assert b"8 characters" in r.data
+
+    def test_mismatched_passwords_rejected(self, admin_client):
+        r = admin_client.post("/portal/admin/settings", data={
+            "current_password": "admin123",
+            "new_password": "newpassword99",
+            "confirm_password": "different99x",
+        })
+        assert b"do not match" in r.data
+
+    def test_settings_requires_admin(self, auth_client):
+        r = auth_client.get("/portal/admin/settings", follow_redirects=True)
+        assert b"Admin access required" in r.data
+
+    def test_settings_requires_login(self, client):
+        r = client.get("/portal/admin/settings")
+        assert r.status_code in (301, 302, 308)
+
+    def test_update_password_db_helper(self, flask_app):
+        user = db_module.get_user_by_email("admin@copywrite.io")
+        db_module.update_password(user["id"], "brandnewpass1")
+        updated = db_module.get_user_by_email("admin@copywrite.io")
+        from werkzeug.security import check_password_hash
+        assert check_password_hash(updated["password_hash"], "brandnewpass1")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Login rate limiting
+# ═══════════════════════════════════════════════════════════════════════════════
+
+class TestLoginRateLimiting:
+
+    def _clear_state(self):
+        """Reset the in-memory failure dict between tests."""
+        from portal import auth as auth_module
+        auth_module._FAILED_LOGINS.clear()
+
+    def test_repeated_failures_trigger_lockout(self, client, flask_app):
+        self._clear_state()
+        from portal import auth as auth_module
+        email = "admin@copywrite.io"
+        # Exhaust attempts
+        for _ in range(auth_module._MAX_ATTEMPTS):
+            client.post("/portal/login", data={"email": email, "password": "bad"})
+        # Next attempt should show lockout message
+        r = client.post("/portal/login", data={"email": email, "password": "bad"})
+        html = r.data.decode()
+        assert "too many" in html.lower() or "wait" in html.lower()
+        self._clear_state()
+
+    def test_successful_login_clears_failure_counter(self, client, flask_app):
+        self._clear_state()
+        from portal import auth as auth_module
+        email = "admin@copywrite.io"
+        # Record some failures
+        client.post("/portal/login", data={"email": email, "password": "bad"})
+        client.post("/portal/login", data={"email": email, "password": "bad"})
+        # Successful login clears them
+        client.post("/portal/login", data={"email": email, "password": "admin123"})
+        assert email not in auth_module._FAILED_LOGINS
+        self._clear_state()
+
+    def test_lockout_does_not_affect_other_emails(self, client, flask_app):
+        self._clear_state()
+        from portal import auth as auth_module
+        bad_email = "hacker@evil.com"
+        good_email = "admin@copywrite.io"
+        # Lock out bad_email
+        for _ in range(auth_module._MAX_ATTEMPTS):
+            client.post("/portal/login", data={"email": bad_email, "password": "bad"})
+        # good_email should still work
+        r = client.post("/portal/login", data={
+            "email": good_email, "password": "admin123"
+        }, follow_redirects=True)
+        assert b"Admin Dashboard" in r.data
+        self._clear_state()
+
+    def test_is_locked_out_helper(self, flask_app):
+        from portal import auth as auth_module
+        auth_module._FAILED_LOGINS.clear()
+        assert not auth_module._is_locked_out("test@test.com")
+        for _ in range(auth_module._MAX_ATTEMPTS):
+            auth_module._record_failure("test@test.com")
+        assert auth_module._is_locked_out("test@test.com")
+        auth_module._clear_failures("test@test.com")
+        assert not auth_module._is_locked_out("test@test.com")

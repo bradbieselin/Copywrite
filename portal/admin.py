@@ -1,12 +1,14 @@
 """Admin portal Blueprint."""
 
 import os
+import threading
 import uuid
 
 from flask import (
     Blueprint, render_template, request, redirect,
-    url_for, flash, current_app,
+    url_for, flash, current_app, session as flask_session,
 )
+from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 
 import db as db_module
@@ -56,6 +58,8 @@ def brief_detail(brief_id):
 
         elif action == "mark_complete":
             db_module.mark_brief_complete(brief_id)
+            brief = db_module.get_brief(brief_id)
+            _notify_client_completion(brief, current_app.config)
             flash("Brief marked as complete.", "success")
             return redirect(url_for("portal_admin.brief_detail", brief_id=brief_id))
 
@@ -73,11 +77,12 @@ def brief_detail(brief_id):
                     os.makedirs(upload_dir, exist_ok=True)
                     file.save(os.path.join(upload_dir, storage))
 
-                    from flask import session as flask_session
                     db_module.save_copy_file(
                         brief_id, original, storage, flask_session["user_id"]
                     )
                     db_module.mark_brief_complete(brief_id)
+                    brief = db_module.get_brief(brief_id)
+                    _notify_client_completion(brief, current_app.config)
                     flash("Copy uploaded and brief marked as complete.", "success")
                     return redirect(
                         url_for("portal_admin.brief_detail", brief_id=brief_id)
@@ -91,6 +96,19 @@ def brief_detail(brief_id):
         copy_file=copy_file,
         error=error,
     )
+
+
+# ── completion notification helper ────────────────────────────────────────────
+
+def _notify_client_completion(brief: dict, config: dict) -> None:
+    """Fire-and-forget: email the client that their copy is ready."""
+    from portal.automation import send_completion_notification
+    t = threading.Thread(
+        target=send_completion_notification,
+        args=(brief, dict(config)),
+        daemon=True,
+    )
+    t.start()
 
 
 # ── create client ─────────────────────────────────────────────────────────────
@@ -119,3 +137,31 @@ def create_client():
             flash(f"Error creating account: {exc}", "danger")
 
     return redirect(url_for("portal_admin.dashboard"))
+
+
+# ── settings (change password) ────────────────────────────────────────────────
+
+@admin_bp.route("/settings", methods=["GET", "POST"])
+@admin_required
+def settings():
+    error = None
+    success = None
+
+    if request.method == "POST":
+        current_pw  = request.form.get("current_password", "")
+        new_pw      = request.form.get("new_password", "").strip()
+        confirm_pw  = request.form.get("confirm_password", "").strip()
+
+        user = db_module.get_user_by_email(flask_session["user_email"])
+
+        if not check_password_hash(user["password_hash"], current_pw):
+            error = "Current password is incorrect."
+        elif len(new_pw) < 8:
+            error = "New password must be at least 8 characters."
+        elif new_pw != confirm_pw:
+            error = "New passwords do not match."
+        else:
+            db_module.update_password(flask_session["user_id"], new_pw)
+            success = "Password updated successfully."
+
+    return render_template("portal/admin/settings.html", error=error, success=success)

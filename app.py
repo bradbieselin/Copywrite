@@ -61,4 +61,10 @@ if __name__ == "__main__":
             "Export your key before running:\n"
             "  export ANTHROPIC_API_KEY='your_key_here'"
         )
+    if app.config["SECRET_KEY"] == "dev-secret-change-in-prod":
+        print(
+            "WARNING: SECRET_KEY is using the insecure default.\n"
+            "Set a random secret before deploying:\n"
+            "  export SECRET_KEY='$(python -c \"import secrets; print(secrets.token_hex(32))\")'"
+        )
     app.run(debug=True, port=5000)

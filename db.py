@@ -147,6 +147,14 @@ def create_user(name: str, email: str, password: str, role: str) -> int:
         return cur.lastrowid
 
 
+def update_password(user_id: int, new_password: str) -> None:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            "UPDATE portal_users SET password_hash = ? WHERE id = ?",
+            (generate_password_hash(new_password), user_id),
+        )
+
+
 def get_all_clients() -> list[dict]:
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row

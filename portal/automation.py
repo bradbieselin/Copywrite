@@ -151,6 +151,82 @@ def send_brief_notification(brief: dict, draft: str, config: dict) -> None:
     logger.info("Admin notification sent for brief %s.", brief["id"])
 
 
+# ── client completion notification ────────────────────────────────────────────
+
+def _completion_email_html(brief: dict, brief_url: str) -> str:
+    return f"""
+<div style="font-family:sans-serif;max-width:600px;color:#111">
+  <h2 style="margin-bottom:4px">Your copy is ready!</h2>
+  <p style="color:#666;margin-top:0">Copywrite Client Portal</p>
+  <hr style="border:none;border-top:1px solid #e5e5e5">
+  <p style="font-size:15px;line-height:1.6">
+    Hi {brief['client_name']},<br><br>
+    Great news — your copy for <strong>{brief['title']}</strong> has been
+    completed and is ready for download in your client portal.
+  </p>
+  <div style="margin-top:24px">
+    <a href="{brief_url}"
+       style="background:#111;color:#fff;padding:10px 20px;border-radius:6px;
+              text-decoration:none;font-size:14px">
+      View &amp; Download Copy →
+    </a>
+  </div>
+  <p style="font-size:13px;color:#999;margin-top:32px">
+    If you have any questions, just reply to this email.
+  </p>
+</div>
+""".strip()
+
+
+def send_completion_notification(brief: dict, config: dict) -> None:
+    """
+    Email the client when their copy is marked complete.
+    Silently skips if SendGrid is not configured.
+    """
+    api_key    = config.get("SENDGRID_API_KEY", "")
+    from_email = config.get("SENDGRID_FROM_EMAIL", "")
+    base_url   = config.get("APP_BASE_URL", "http://localhost:5000").rstrip("/")
+
+    client_email = brief.get("client_email", "")
+    if not api_key or not from_email or not client_email:
+        logger.info(
+            "Completion notification skipped — SendGrid not configured or "
+            "client email missing for brief %s.", brief.get("id")
+        )
+        return
+
+    brief_url = f"{base_url}/portal/client/briefs/{brief['id']}"
+    subject   = f"Your copy is ready: {brief['title']}"
+
+    payload = json.dumps({
+        "personalizations": [{"to": [{"email": client_email}]}],
+        "from": {"email": from_email},
+        "subject": subject,
+        "content": [{"type": "text/html",
+                     "value": _completion_email_html(brief, brief_url)}],
+    }).encode()
+
+    req = urllib.request.Request(
+        "https://api.sendgrid.com/v3/mail/send",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            status = resp.status
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="replace")
+        raise RuntimeError(f"SendGrid HTTP {exc.code}: {body}") from exc
+
+    if status not in (200, 201, 202):
+        raise RuntimeError(f"SendGrid returned unexpected status {status}.")
+    logger.info("Completion notification sent to %s for brief %s.",
+                client_email, brief["id"])
+
+
 # ── orchestrator ──────────────────────────────────────────────────────────────
 
 def run_brief_automation(brief: dict, config: dict) -> None:
