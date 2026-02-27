@@ -11,6 +11,9 @@ Copywrite — Flask web app suite
 
 import os
 from flask import Flask
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from db import init_db, init_portal_db
 
