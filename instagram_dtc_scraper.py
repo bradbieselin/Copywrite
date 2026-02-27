@@ -7,10 +7,14 @@ Two-phase approach:
   Phase 2 — Scrape each profile URL for full details (followers, bio, etc.)
              and filter to business/brand accounts only.
 
-Usage:
+Usage (CLI):
   python instagram_dtc_scraper.py
   python instagram_dtc_scraper.py --hashtags dtcbrand shopify ecommerce --max-results 100
   python instagram_dtc_scraper.py --output my_leads.csv
+
+Importable (called from the admin portal):
+  from instagram_dtc_scraper import run_scraper
+  summary = run_scraper(["dtcbrand", "shopifybrand"], 100, "leads.csv", token, on_status=log_fn)
 """
 
 import argparse
@@ -25,17 +29,17 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ---------------------------------------------------------------------------
-# Defaults (all overridable via CLI)
+# Defaults (all overridable via CLI or run_scraper() kwargs)
 # ---------------------------------------------------------------------------
 
-DEFAULT_HASHTAGS = ["dtcbrand", "shopifybrand", "ecommerce"]
-MIN_FOLLOWERS = 5_000
-MAX_FOLLOWERS = 500_000
-DEFAULT_OUTPUT = "leads.csv"
+DEFAULT_HASHTAGS    = ["dtcbrand", "shopifybrand", "ecommerce"]
+MIN_FOLLOWERS       = 5_000
+MAX_FOLLOWERS       = 500_000
+DEFAULT_OUTPUT      = "leads.csv"
 DEFAULT_MAX_RESULTS = 200
 
-ACTOR_ID = "apify/instagram-scraper"
-PROFILE_BATCH_SIZE = 50
+ACTOR_ID            = "apify/instagram-scraper"
+PROFILE_BATCH_SIZE  = 50
 
 CSV_FIELDS = ["username", "full_name", "follower_count", "bio", "profile_url", "hashtag"]
 
@@ -49,32 +53,26 @@ def parse_args() -> argparse.Namespace:
         description="Scrape Instagram for DTC brand accounts via Apify.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    p.add_argument(
-        "--hashtags",
-        nargs="+",
-        default=DEFAULT_HASHTAGS,
-        metavar="TAG",
-        help="Hashtags to search (without #).",
-    )
-    p.add_argument(
-        "--max-results",
-        type=int,
-        default=DEFAULT_MAX_RESULTS,
-        metavar="N",
-        help="Max posts to scrape per hashtag.",
-    )
-    p.add_argument(
-        "--output",
-        default=DEFAULT_OUTPUT,
-        metavar="FILE",
-        help="Output CSV file path.",
-    )
+    p.add_argument("--hashtags", nargs="+", default=DEFAULT_HASHTAGS, metavar="TAG",
+                   help="Hashtags to search (without #).")
+    p.add_argument("--max-results", type=int, default=DEFAULT_MAX_RESULTS, metavar="N",
+                   help="Max posts to scrape per hashtag.")
+    p.add_argument("--output", default=DEFAULT_OUTPUT, metavar="FILE",
+                   help="Output CSV file path.")
     return p.parse_args()
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+def _emit(msg: str, log_fn=None) -> None:
+    """Print to stdout or call log_fn — used for both CLI and portal modes."""
+    if log_fn:
+        log_fn(msg)
+    else:
+        print(msg)
+
 
 def validate_token(token: str) -> None:
     if not token:
@@ -109,9 +107,9 @@ def _actor_call(client: ApifyClient, run_input: dict, context: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def collect_usernames_for_hashtag(
-    client: ApifyClient, hashtag: str, max_results: int
+    client: ApifyClient, hashtag: str, max_results: int, log_fn=None
 ) -> set[str]:
-    print(f"  Phase 1 — scraping posts for #{hashtag} ...")
+    _emit(f"Phase 1 — scraping posts for #{hashtag} ...", log_fn)
     run_input = {
         "hashtags": [hashtag],
         "resultsType": "posts",
@@ -126,7 +124,7 @@ def collect_usernames_for_hashtag(
         if username:
             usernames.add(username)
 
-    print(f"    -> {len(usernames)} unique accounts found for #{hashtag}")
+    _emit(f"  -> {len(usernames)} unique accounts found for #{hashtag}", log_fn)
     return usernames
 
 
@@ -151,7 +149,6 @@ def is_business_account(item: dict) -> bool:
         return True
     if item.get("businessCategoryName"):
         return True
-    # Some actor versions expose accountType: "Business" / "Creator" / "Personal"
     account_type = (item.get("accountType") or "").lower()
     return account_type in ("business", "creator")
 
@@ -186,56 +183,78 @@ def in_follower_range(profile: dict) -> bool:
     return MIN_FOLLOWERS <= profile["follower_count"] <= MAX_FOLLOWERS
 
 
-def save_to_csv(profiles: list[dict], filepath: str) -> None:
+def save_to_csv(profiles: list[dict], filepath: str, log_fn=None) -> None:
+    os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
     with open(filepath, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=CSV_FIELDS)
         writer.writeheader()
         writer.writerows(profiles)
-    print(f"Saved {len(profiles)} lead{'s' if len(profiles) != 1 else ''} to {filepath}")
+    _emit(f"Saved {len(profiles)} lead{'s' if len(profiles) != 1 else ''} to {filepath}", log_fn)
 
 
 # ---------------------------------------------------------------------------
-# Main
+# Core pipeline — importable from the portal
 # ---------------------------------------------------------------------------
 
-def main() -> None:
-    args = parse_args()
+def run_scraper(
+    hashtags: list[str],
+    max_results: int,
+    output_file: str,
+    token: str,
+    on_status=None,
+) -> dict:
+    """
+    Run the full scraper pipeline.
 
-    token = os.environ.get("APIFY_API_TOKEN", "")
-    validate_token(token)
+    Args:
+        hashtags:    List of hashtag strings (with or without #).
+        max_results: Max posts to pull per hashtag.
+        output_file: Path for the output CSV.
+        token:       Apify API token.
+        on_status:   Optional callable(msg: str) for live progress updates.
+
+    Returns:
+        A summary dict with counts and the output file path.
+    """
+    log = lambda msg: _emit(msg, on_status)
 
     client = ApifyClient(token)
+    hashtags = [h.lstrip("#") for h in hashtags]
 
-    # Strip any leading # the user may have included
-    hashtags = [h.lstrip("#") for h in args.hashtags]
+    log(f"Searching {len(hashtags)} hashtag(s): {', '.join('#' + h for h in hashtags)}")
+    log(f"Follower range: {MIN_FOLLOWERS:,} – {MAX_FOLLOWERS:,}")
+    log(f"Max posts per hashtag: {max_results}")
 
-    print(f"\nSearching {len(hashtags)} hashtag(s): {', '.join('#' + h for h in hashtags)}")
-    print(f"Follower range: {MIN_FOLLOWERS:,} – {MAX_FOLLOWERS:,}")
-    print(f"Max posts per hashtag: {args.max_results}\n")
-
-    # ---- Phase 1: collect usernames, tracking first-seen hashtag ----
-    # username -> first hashtag it was discovered under
+    # ── Phase 1: collect usernames, tracking first-seen hashtag ──
     username_to_hashtag: dict[str, str] = {}
 
     for hashtag in hashtags:
         try:
-            found = collect_usernames_for_hashtag(client, hashtag, args.max_results)
+            found = collect_usernames_for_hashtag(client, hashtag, max_results, on_status)
             for u in found:
                 if u not in username_to_hashtag:
                     username_to_hashtag[u] = hashtag
         except Exception as exc:
-            print(f"  WARNING: failed to scrape #{hashtag}: {exc}")
+            log(f"WARNING: failed to scrape #{hashtag}: {exc}")
         time.sleep(2)
 
     total_unique = len(username_to_hashtag)
-    print(f"\nTotal unique accounts across all hashtags: {total_unique}")
+    log(f"Total unique accounts across all hashtags: {total_unique}")
 
     if not username_to_hashtag:
-        print("No accounts found. Check your hashtags and API token.")
-        save_to_csv([], args.output)
-        return
+        log("No accounts found. Check your hashtags and API token.")
+        save_to_csv([], output_file, on_status)
+        return {
+            "hashtags_searched": len(hashtags),
+            "unique_found": 0,
+            "personal_skipped": 0,
+            "business_found": 0,
+            "follower_filtered": 0,
+            "leads_saved": 0,
+            "output_file": output_file,
+        }
 
-    # ---- Phase 2: fetch full profile details in batches ----
+    # ── Phase 2: fetch full profile details in batches ──
     username_list = sorted(username_to_hashtag.keys())
     raw_profiles: list[dict] = []
     business_count = 0
@@ -246,10 +265,7 @@ def main() -> None:
     for i in range(0, len(username_list), PROFILE_BATCH_SIZE):
         batch = username_list[i: i + PROFILE_BATCH_SIZE]
         batch_num = i // PROFILE_BATCH_SIZE + 1
-        print(
-            f"  Phase 2 — fetching profile details "
-            f"(batch {batch_num}/{total_batches}, {len(batch)} accounts) ..."
-        )
+        log(f"Phase 2 — batch {batch_num}/{total_batches} ({len(batch)} accounts) ...")
         try:
             items = fetch_profiles_batch(client, batch)
             for item in items:
@@ -264,13 +280,12 @@ def main() -> None:
                 if profile:
                     raw_profiles.append(profile)
         except Exception as exc:
-            print(f"  WARNING: profile batch {batch_num} failed: {exc}")
+            log(f"WARNING: profile batch {batch_num} failed: {exc}")
         time.sleep(2)
 
-    # ---- Apply follower range filter ----
+    # ── Filters + dedup ──
     follower_filtered = [p for p in raw_profiles if in_follower_range(p)]
 
-    # ---- Deduplicate (shouldn't happen, but be safe) ----
     seen: set[str] = set()
     final: list[dict] = []
     for p in follower_filtered:
@@ -278,26 +293,52 @@ def main() -> None:
             seen.add(p["username"])
             final.append(p)
 
-    # Sort by follower count descending for easy review
     final.sort(key=lambda p: p["follower_count"], reverse=True)
+    save_to_csv(final, output_file, on_status)
 
-    save_to_csv(final, args.output)
+    summary = {
+        "hashtags_searched": len(hashtags),
+        "unique_found": total_unique,
+        "personal_skipped": skipped_personal,
+        "business_found": business_count,
+        "follower_filtered": len(follower_filtered),
+        "leads_saved": len(final),
+        "output_file": output_file,
+    }
 
-    # ---- Summary ----
+    log(f"Done — {len(final)} leads saved to {output_file}.")
+    return summary
+
+
+# ---------------------------------------------------------------------------
+# CLI entry point
+# ---------------------------------------------------------------------------
+
+def main() -> None:
+    args = parse_args()
+    token = os.environ.get("APIFY_API_TOKEN", "")
+    validate_token(token)
+
+    hashtags = [h.lstrip("#") for h in args.hashtags]
+    summary = run_scraper(
+        hashtags=hashtags,
+        max_results=args.max_results,
+        output_file=args.output,
+        token=token,
+    )
+
     print()
     print("=" * 50)
     print("  SUMMARY")
     print("=" * 50)
-    print(f"  Hashtags searched      : {len(hashtags)}")
-    print(f"  Unique accounts found  : {total_unique}")
-    print(f"  Personal (skipped)     : {skipped_personal}")
-    print(f"  Business/creator accts : {business_count}")
-    print(
-        f"  After follower filter  : {len(follower_filtered)}"
-        f"  ({MIN_FOLLOWERS:,}–{MAX_FOLLOWERS:,})"
-    )
-    print(f"  Leads saved            : {len(final)}")
-    print(f"  Output file            : {args.output}")
+    print(f"  Hashtags searched      : {summary['hashtags_searched']}")
+    print(f"  Unique accounts found  : {summary['unique_found']}")
+    print(f"  Personal (skipped)     : {summary['personal_skipped']}")
+    print(f"  Business/creator accts : {summary['business_found']}")
+    print(f"  After follower filter  : {summary['follower_filtered']}"
+          f"  ({MIN_FOLLOWERS:,}–{MAX_FOLLOWERS:,})")
+    print(f"  Leads saved            : {summary['leads_saved']}")
+    print(f"  Output file            : {summary['output_file']}")
     print("=" * 50)
 
 

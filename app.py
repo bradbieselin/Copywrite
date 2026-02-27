@@ -19,6 +19,7 @@ def create_app() -> Flask:
     app = Flask(__name__)
 
     app.config["ANTHROPIC_API_KEY"] = os.environ.get("ANTHROPIC_API_KEY", "")
+    app.config["APIFY_API_TOKEN"]   = os.environ.get("APIFY_API_TOKEN", "")
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-prod")
     app.config["UPLOAD_FOLDER"] = os.environ.get(
         "UPLOAD_FOLDER",

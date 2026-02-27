@@ -1,0 +1,208 @@
+{% extends "portal/base.html" %}
+{% block title %}Lead Scraper — CopyDTC Admin{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <a href="{{ url_for('portal_admin.dashboard') }}" class="text-muted small text-decoration-none">
+    &larr; Back to Dashboard
+  </a>
+</div>
+
+<div class="d-flex justify-content-between align-items-start mb-4">
+  <div>
+    <h2 class="fw-bold mb-1">Instagram Lead Scraper</h2>
+    <p class="text-muted small mb-0">
+      Finds DTC brand accounts via hashtags using Apify, filters to business pages only,
+      and saves to a CSV you can download.
+    </p>
+  </div>
+  {% if has_csv %}
+    <a href="{{ url_for('portal_admin.scraper_download') }}" class="btn btn-success">
+      &#8595;&ensp;Download leads.csv{% if csv_size %} ({{ csv_size }}){% endif %}
+    </a>
+  {% endif %}
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }} py-2 small">{{ msg }}</div>
+  {% endfor %}
+{% endwith %}
+
+{% if not token_set %}
+  <div class="alert alert-warning mb-4">
+    <strong>APIFY_API_TOKEN not set.</strong>
+    Add it to your <code>.env</code> file and restart the server.
+    See <code>.env.example</code> for the required variable name.
+  </div>
+{% endif %}
+
+<div class="row g-4">
+
+  <!-- ── Left: config form ── -->
+  <div class="col-lg-4">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-bottom py-3 px-4">
+        <h6 class="fw-bold mb-0">Configuration</h6>
+      </div>
+      <div class="card-body p-4">
+
+        <form method="POST" action="{{ url_for('portal_admin.scraper_run') }}" id="scraperForm">
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="hashtags">Hashtags</label>
+            <textarea class="form-control font-monospace" id="hashtags" name="hashtags"
+                      rows="6" placeholder="dtcbrand&#10;shopifybrand&#10;ecommerce"
+                      {% if state.status == 'running' %}disabled{% endif %}>dtcbrand
+shopifybrand
+ecommerce</textarea>
+            <div class="form-text">One per line, without the # symbol.</div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="max_results">Max posts per hashtag</label>
+            <input type="number" class="form-control" id="max_results" name="max_results"
+                   value="200" min="10" max="500"
+                   {% if state.status == 'running' %}disabled{% endif %}>
+            <div class="form-text">10–500. Higher = more accounts, longer runtime.</div>
+          </div>
+
+          <button type="submit" id="startBtn"
+                  class="btn btn-dark w-100"
+                  {% if state.status == 'running' or not token_set %}disabled{% endif %}>
+            {% if state.status == 'running' %}
+              Running&hellip;
+            {% else %}
+              Start Scraper
+            {% endif %}
+          </button>
+
+        </form>
+
+      </div>
+    </div>
+
+    <!-- Previous run summary -->
+    {% if state.summary %}
+    <div class="card shadow-sm border-0 mt-3">
+      <div class="card-header bg-white border-bottom py-3 px-4">
+        <h6 class="fw-bold mb-0">Last Run Summary</h6>
+      </div>
+      <div class="card-body p-4">
+        <dl class="row mb-0 small">
+          <dt class="col-7 text-muted fw-normal">Hashtags searched</dt>
+          <dd class="col-5 text-end fw-semibold mb-2">{{ state.summary.hashtags_searched }}</dd>
+
+          <dt class="col-7 text-muted fw-normal">Unique accounts found</dt>
+          <dd class="col-5 text-end fw-semibold mb-2">{{ state.summary.unique_found }}</dd>
+
+          <dt class="col-7 text-muted fw-normal">Personal (skipped)</dt>
+          <dd class="col-5 text-end fw-semibold mb-2">{{ state.summary.personal_skipped }}</dd>
+
+          <dt class="col-7 text-muted fw-normal">Business accounts</dt>
+          <dd class="col-5 text-end fw-semibold mb-2">{{ state.summary.business_found }}</dd>
+
+          <dt class="col-7 text-muted fw-normal">After follower filter</dt>
+          <dd class="col-5 text-end fw-semibold mb-2">{{ state.summary.follower_filtered }}</dd>
+
+          <dt class="col-7 text-muted fw-normal border-top pt-2">Leads saved</dt>
+          <dd class="col-5 text-end fw-bold text-success border-top pt-2">{{ state.summary.leads_saved }}</dd>
+        </dl>
+
+        {% if state.status == 'done' %}
+          <a href="{{ url_for('portal_admin.scraper_download') }}"
+             class="btn btn-success w-100 mt-3">&#8595;&ensp;Download leads.csv</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- ── Right: live log ── -->
+  <div class="col-lg-8">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+        <h6 class="fw-bold mb-0">Live Log</h6>
+        <span id="statusBadge" class="badge rounded-pill
+          {% if state.status == 'running' %}bg-primary
+          {% elif state.status == 'done' %}bg-success
+          {% elif state.status == 'error' %}bg-danger
+          {% else %}bg-secondary{% endif %}">
+          {{ state.status | capitalize }}
+        </span>
+      </div>
+      <div class="card-body p-0">
+        <pre id="logOutput"
+             style="height:420px;overflow-y:auto;background:#0d1117;color:#c9d1d9;
+                    font-size:.78rem;line-height:1.6;margin:0;padding:1.25rem;
+                    border-radius:0 0 .5rem .5rem;">{% for line in state.log %}{{ line }}
+{% endfor %}{% if state.status == 'idle' %}<span style="color:#6e7681">Start a run to see output here.</span>{% endif %}</pre>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  const logEl     = document.getElementById("logOutput");
+  const badgeEl   = document.getElementById("statusBadge");
+  const startBtn  = document.getElementById("startBtn");
+  let   lastLen   = {{ state.log | length }};
+  let   polling   = {{ 'true' if state.status == 'running' else 'false' }};
+
+  function scrollLog() {
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  scrollLog();
+
+  function updateBadge(status) {
+    const map = { running: "bg-primary", done: "bg-success", error: "bg-danger", idle: "bg-secondary" };
+    badgeEl.className = "badge rounded-pill " + (map[status] || "bg-secondary");
+    badgeEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+  }
+
+  function poll() {
+    fetch("{{ url_for('portal_admin.scraper_status') }}")
+      .then(r => r.json())
+      .then(data => {
+        // Append new log lines
+        if (data.log.length > lastLen) {
+          const newLines = data.log.slice(lastLen).join("\n") + "\n";
+          // Replace placeholder if present
+          const current = logEl.textContent;
+          if (current.trim() === "Start a run to see output here.") {
+            logEl.textContent = newLines;
+          } else {
+            logEl.textContent += newLines;
+          }
+          lastLen = data.log.length;
+          scrollLog();
+        }
+
+        updateBadge(data.status);
+
+        if (data.status === "running") {
+          startBtn.disabled = true;
+          startBtn.textContent = "Running\u2026";
+          setTimeout(poll, 2000);
+        } else {
+          startBtn.disabled = false;
+          startBtn.textContent = "Start Scraper";
+          // Reload so the summary card and download button appear
+          if (data.status === "done" || data.status === "error") {
+            setTimeout(() => { window.location.reload(); }, 1000);
+          }
+        }
+      })
+      .catch(() => {
+        if (polling) setTimeout(poll, 3000);
+      });
+  }
+
+  if (polling) { poll(); } else { scrollLog(); }
+})();
+</script>
+
+{% endblock %}

@@ -1,5 +1,6 @@
 """Admin portal Blueprint."""
 
+import datetime
 import os
 import threading
 import uuid
@@ -7,6 +8,7 @@ import uuid
 from flask import (
     Blueprint, render_template, request, redirect,
     url_for, flash, current_app, session as flask_session,
+    jsonify, send_file,
 )
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
@@ -15,6 +17,17 @@ import db as db_module
 from portal.auth import admin_required
 
 admin_bp = Blueprint("portal_admin", __name__)
+
+# ── Lead Scraper state (module-level; fine for a single-process deployment) ───
+
+_scraper_state: dict = {
+    "status": "idle",   # idle | running | done | error
+    "log": [],
+    "summary": None,
+    "started_at": None,
+    "finished_at": None,
+}
+_scraper_lock = threading.Lock()
 
 _ALLOWED = {"txt", "pdf", "doc", "docx"}
 
@@ -219,3 +232,113 @@ def settings():
             success = "Password updated successfully."
 
     return render_template("portal/admin/settings.html", error=error, success=success)
+
+
+# ── Lead Scraper ───────────────────────────────────────────────────────────────
+
+def _leads_csv_path() -> str:
+    return os.path.join(current_app.config["UPLOAD_FOLDER"], "leads.csv")
+
+
+def _run_scraper_thread(hashtags: list[str], max_results: int, output_file: str, token: str) -> None:
+    from instagram_dtc_scraper import run_scraper
+
+    def log(msg: str) -> None:
+        ts = datetime.datetime.now().strftime("%H:%M:%S")
+        with _scraper_lock:
+            _scraper_state["log"].append(f"[{ts}] {msg}")
+
+    try:
+        summary = run_scraper(
+            hashtags=hashtags,
+            max_results=max_results,
+            output_file=output_file,
+            token=token,
+            on_status=log,
+        )
+        with _scraper_lock:
+            _scraper_state["status"] = "done"
+            _scraper_state["summary"] = summary
+            _scraper_state["finished_at"] = datetime.datetime.now().isoformat(timespec="seconds")
+    except Exception as exc:
+        with _scraper_lock:
+            _scraper_state["status"] = "error"
+            _scraper_state["log"].append(f"[ERROR] {exc}")
+            _scraper_state["finished_at"] = datetime.datetime.now().isoformat(timespec="seconds")
+
+
+@admin_bp.route("/scraper")
+@admin_required
+def scraper():
+    token_set = bool(current_app.config.get("APIFY_API_TOKEN"))
+    csv_path = _leads_csv_path()
+    has_csv = os.path.exists(csv_path)
+    csv_size = None
+    if has_csv:
+        size_bytes = os.path.getsize(csv_path)
+        csv_size = f"{size_bytes / 1024:.1f} KB" if size_bytes >= 1024 else f"{size_bytes} B"
+    with _scraper_lock:
+        state = dict(_scraper_state)
+    return render_template(
+        "portal/admin/scraper.html",
+        state=state,
+        token_set=token_set,
+        has_csv=has_csv,
+        csv_size=csv_size,
+    )
+
+
+@admin_bp.route("/scraper/run", methods=["POST"])
+@admin_required
+def scraper_run():
+    with _scraper_lock:
+        if _scraper_state["status"] == "running":
+            flash("A scraper run is already in progress.", "warning")
+            return redirect(url_for("portal_admin.scraper"))
+
+    token = current_app.config.get("APIFY_API_TOKEN", "")
+    if not token:
+        flash("APIFY_API_TOKEN is not configured. Add it to your .env file.", "danger")
+        return redirect(url_for("portal_admin.scraper"))
+
+    raw_tags = request.form.get("hashtags", "").strip()
+    hashtags = [t.strip().lstrip("#") for t in raw_tags.replace(",", "\n").splitlines() if t.strip()]
+    if not hashtags:
+        flash("Enter at least one hashtag.", "danger")
+        return redirect(url_for("portal_admin.scraper"))
+
+    max_results = min(max(int(request.form.get("max_results", 200)), 10), 500)
+    output_file = _leads_csv_path()
+
+    with _scraper_lock:
+        _scraper_state["status"] = "running"
+        _scraper_state["log"] = []
+        _scraper_state["summary"] = None
+        _scraper_state["started_at"] = datetime.datetime.now().isoformat(timespec="seconds")
+        _scraper_state["finished_at"] = None
+
+    t = threading.Thread(
+        target=_run_scraper_thread,
+        args=(hashtags, max_results, output_file, token),
+        daemon=True,
+    )
+    t.start()
+
+    return redirect(url_for("portal_admin.scraper"))
+
+
+@admin_bp.route("/scraper/status")
+@admin_required
+def scraper_status():
+    with _scraper_lock:
+        return jsonify(dict(_scraper_state))
+
+
+@admin_bp.route("/scraper/download")
+@admin_required
+def scraper_download():
+    csv_path = _leads_csv_path()
+    if not os.path.exists(csv_path):
+        flash("No leads file found. Run the scraper first.", "warning")
+        return redirect(url_for("portal_admin.scraper"))
+    return send_file(csv_path, as_attachment=True, download_name="leads.csv")
