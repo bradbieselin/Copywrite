@@ -3,8 +3,11 @@
 import os
 import sqlite3
 
+from werkzeug.security import generate_password_hash
+
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "copywrite.db")
 
+# ── anonymous intake tool ─────────────────────────────────────────────────────
 
 def init_db():
     with sqlite3.connect(DB_PATH) as conn:
@@ -49,3 +52,219 @@ def save_submission(data: dict) -> int:
             ),
         )
         return cur.lastrowid
+
+
+# ── client portal ─────────────────────────────────────────────────────────────
+
+def init_portal_db():
+    """Create portal tables and seed the default admin account if missing."""
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS portal_users (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                name          TEXT NOT NULL,
+                email         TEXT UNIQUE NOT NULL,
+                password_hash TEXT NOT NULL,
+                role          TEXT NOT NULL CHECK(role IN ('client', 'admin'))
+            );
+
+            CREATE TABLE IF NOT EXISTS briefs (
+                id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                client_id           INTEGER NOT NULL REFERENCES portal_users(id),
+                title               TEXT NOT NULL,
+                product_name        TEXT NOT NULL,
+                product_description TEXT NOT NULL,
+                target_audience     TEXT NOT NULL,
+                main_benefit        TEXT NOT NULL,
+                biggest_objection   TEXT NOT NULL,
+                tone                TEXT NOT NULL,
+                copy_type           TEXT NOT NULL,
+                notes               TEXT NOT NULL DEFAULT '',
+                status              TEXT NOT NULL DEFAULT 'pending'
+                                    CHECK(status IN ('pending','in_progress','completed')),
+                completed_at        TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS copy_files (
+                id                INTEGER PRIMARY KEY AUTOINCREMENT,
+                uploaded_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                brief_id          INTEGER NOT NULL REFERENCES briefs(id),
+                original_filename TEXT NOT NULL,
+                storage_filename  TEXT NOT NULL,
+                uploaded_by       INTEGER NOT NULL REFERENCES portal_users(id)
+            );
+        """)
+
+        admin = conn.execute(
+            "SELECT id FROM portal_users WHERE role='admin' LIMIT 1"
+        ).fetchone()
+
+        if not admin:
+            conn.execute(
+                "INSERT INTO portal_users (name, email, password_hash, role) VALUES (?,?,?,?)",
+                ("Admin", "admin@copywrite.io",
+                 generate_password_hash("admin123"), "admin"),
+            )
+            print(
+                "\n[Portal] Default admin created — "
+                "email: admin@copywrite.io  password: admin123\n"
+                "Change this password after first login.\n"
+            )
+
+
+# ── users ─────────────────────────────────────────────────────────────────────
+
+def _row_to_dict(row):
+    return dict(row) if row else None
+
+
+def get_user_by_email(email: str) -> dict | None:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT * FROM portal_users WHERE email = ?", (email.lower().strip(),)
+        ).fetchone()
+        return _row_to_dict(row)
+
+
+def create_user(name: str, email: str, password: str, role: str) -> int:
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.execute(
+            "INSERT INTO portal_users (name, email, password_hash, role) VALUES (?,?,?,?)",
+            (name.strip(), email.lower().strip(),
+             generate_password_hash(password), role),
+        )
+        return cur.lastrowid
+
+
+def get_all_clients() -> list[dict]:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT id, name, email, created_at FROM portal_users "
+            "WHERE role='client' ORDER BY name"
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+# ── briefs ────────────────────────────────────────────────────────────────────
+
+def create_brief(client_id: int, form_data: dict) -> int:
+    with sqlite3.connect(DB_PATH) as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO briefs
+              (client_id, title, product_name, product_description, target_audience,
+               main_benefit, biggest_objection, tone, copy_type, notes)
+            VALUES (?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                client_id,
+                form_data["title"],
+                form_data["product_name"],
+                form_data["product_description"],
+                form_data["target_audience"],
+                form_data["main_benefit"],
+                form_data["biggest_objection"],
+                form_data["tone"],
+                form_data["copy_type"],
+                form_data.get("notes", ""),
+            ),
+        )
+        return cur.lastrowid
+
+
+def get_brief(brief_id: int) -> dict | None:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            """
+            SELECT b.*, u.name AS client_name, u.email AS client_email
+            FROM   briefs b
+            JOIN   portal_users u ON b.client_id = u.id
+            WHERE  b.id = ?
+            """,
+            (brief_id,),
+        ).fetchone()
+        return _row_to_dict(row)
+
+
+def get_client_briefs(client_id: int) -> list[dict]:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT * FROM briefs WHERE client_id = ? ORDER BY created_at DESC",
+            (client_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def get_all_briefs() -> list[dict]:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT b.*, u.name AS client_name, u.email AS client_email
+            FROM   briefs b
+            JOIN   portal_users u ON b.client_id = u.id
+            ORDER BY
+                CASE b.status
+                    WHEN 'pending'     THEN 0
+                    WHEN 'in_progress' THEN 1
+                    WHEN 'completed'   THEN 2
+                END,
+                b.created_at DESC
+            """
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def update_brief_status(brief_id: int, status: str) -> None:
+    with sqlite3.connect(DB_PATH) as conn:
+        if status == "completed":
+            conn.execute(
+                "UPDATE briefs SET status=?, completed_at=CURRENT_TIMESTAMP WHERE id=?",
+                (status, brief_id),
+            )
+        else:
+            conn.execute(
+                "UPDATE briefs SET status=?, completed_at=NULL WHERE id=?",
+                (status, brief_id),
+            )
+
+
+def mark_brief_complete(brief_id: int) -> None:
+    update_brief_status(brief_id, "completed")
+
+
+# ── copy files ────────────────────────────────────────────────────────────────
+
+def save_copy_file(
+    brief_id: int,
+    original_filename: str,
+    storage_filename: str,
+    uploaded_by: int,
+) -> int:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("DELETE FROM copy_files WHERE brief_id = ?", (brief_id,))
+        cur = conn.execute(
+            """
+            INSERT INTO copy_files
+              (brief_id, original_filename, storage_filename, uploaded_by)
+            VALUES (?,?,?,?)
+            """,
+            (brief_id, original_filename, storage_filename, uploaded_by),
+        )
+        return cur.lastrowid
+
+
+def get_copy_file(brief_id: int) -> dict | None:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        row = conn.execute(
+            "SELECT * FROM copy_files WHERE brief_id = ? ORDER BY uploaded_at DESC LIMIT 1",
+            (brief_id,),
+        ).fetchone()
+        return _row_to_dict(row)

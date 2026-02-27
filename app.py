@@ -1,27 +1,44 @@
 """
 Copywrite — Flask web app suite
-  /          → Cold DM Generator
-  /intake    → Client Copy Generator
+  /              → Cold DM Generator
+  /intake        → Anonymous Copy Generator
+  /portal/login  → Client Portal (login, client dashboard, admin dashboard)
 """
 
 import os
 from flask import Flask
 
-from db import init_db
+from db import init_db, init_portal_db
 
 
 def create_app() -> Flask:
     app = Flask(__name__)
-    app.config["ANTHROPIC_API_KEY"] = os.environ.get("ANTHROPIC_API_KEY", "")
 
+    app.config["ANTHROPIC_API_KEY"] = os.environ.get("ANTHROPIC_API_KEY", "")
+    app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-prod")
+    app.config["UPLOAD_FOLDER"] = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "uploads"
+    )
+    # Limit uploaded files to 16 MB
+    app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024
+
+    # Public tools
     from dm import dm_bp
     from intake import intake_bp
-
     app.register_blueprint(dm_bp)
     app.register_blueprint(intake_bp, url_prefix="/intake")
 
+    # Client portal
+    from portal.auth import auth_bp
+    from portal.client import client_bp
+    from portal.admin import admin_bp
+    app.register_blueprint(auth_bp, url_prefix="/portal")
+    app.register_blueprint(client_bp, url_prefix="/portal/client")
+    app.register_blueprint(admin_bp, url_prefix="/portal/admin")
+
     with app.app_context():
         init_db()
+        init_portal_db()
 
     return app
 

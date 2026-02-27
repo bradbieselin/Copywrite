@@ -1,0 +1,123 @@
+{% extends "portal/base.html" %}
+{% block title %}New Brief — Copywrite Portal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <a href="{{ url_for('portal_client.dashboard') }}" class="text-muted small text-decoration-none">
+    &larr; Back to My Briefs
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h4 class="fw-bold mb-1">New Copy Brief</h4>
+        <p class="text-muted small mb-4">Fill in the details below and we'll get started on your copy.</p>
+
+        {% if error %}
+          <div class="alert alert-danger py-2 small">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" novalidate>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="title">
+              Brief title <span class="text-danger">*</span>
+            </label>
+            <input type="text" class="form-control" id="title" name="title"
+                   placeholder="e.g. Q2 Welcome Email"
+                   value="{{ form_data.get('title', '') }}" required>
+            <div class="form-text">A short name so you can find this brief later.</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="product_name">
+              Product / service name <span class="text-danger">*</span>
+            </label>
+            <input type="text" class="form-control" id="product_name" name="product_name"
+                   placeholder="e.g. GlowSerum Pro"
+                   value="{{ form_data.get('product_name', '') }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="product_description">
+              Product description <span class="text-danger">*</span>
+            </label>
+            <textarea class="form-control" id="product_description" name="product_description"
+                      rows="3" placeholder="What does it do and what makes it different?">{{ form_data.get('product_description', '') }}</textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="target_audience">
+              Target audience <span class="text-danger">*</span>
+            </label>
+            <input type="text" class="form-control" id="target_audience" name="target_audience"
+                   placeholder="e.g. Women 25–40 with sensitive skin"
+                   value="{{ form_data.get('target_audience', '') }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="main_benefit">
+              Main benefit <span class="text-danger">*</span>
+            </label>
+            <input type="text" class="form-control" id="main_benefit" name="main_benefit"
+                   placeholder="e.g. Visibly reduces redness in 7 days"
+                   value="{{ form_data.get('main_benefit', '') }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold" for="biggest_objection">
+              Biggest customer objection <span class="text-danger">*</span>
+            </label>
+            <input type="text" class="form-control" id="biggest_objection" name="biggest_objection"
+                   placeholder="e.g. It's too expensive for a daily serum"
+                   value="{{ form_data.get('biggest_objection', '') }}" required>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="tone">
+                Tone of voice <span class="text-danger">*</span>
+              </label>
+              <select class="form-select" id="tone" name="tone" required>
+                {% for t in tones %}
+                  <option value="{{ t }}"
+                    {% if form_data.get('tone') == t %}selected{% endif %}>
+                    {{ t | capitalize }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label fw-semibold" for="copy_type">
+                Type of copy <span class="text-danger">*</span>
+              </label>
+              <select class="form-select" id="copy_type" name="copy_type" required>
+                {% for ct in copy_types %}
+                  <option value="{{ ct }}"
+                    {% if form_data.get('copy_type') == ct %}selected{% endif %}>
+                    {{ ct | capitalize }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="notes">
+              Additional notes <span class="text-muted fw-normal">(optional)</span>
+            </label>
+            <textarea class="form-control" id="notes" name="notes" rows="3"
+                      placeholder="Anything else we should know — references, constraints, examples you like…">{{ form_data.get('notes', '') }}</textarea>
+          </div>
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-dark btn-lg">Submit Brief</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

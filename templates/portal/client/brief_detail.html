@@ -1,0 +1,79 @@
+{% extends "portal/base.html" %}
+{% block title %}{{ brief.title }} — Copywrite Portal{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <a href="{{ url_for('portal_client.dashboard') }}" class="text-muted small text-decoration-none">
+    &larr; Back to My Briefs
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-7">
+
+    <!-- header -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h4 class="fw-bold mb-0">{{ brief.title }}</h4>
+      <span class="badge badge-status-{{ brief.status }} rounded-pill fs-6">
+        {{ brief.status | replace('_', ' ') | title }}
+      </span>
+    </div>
+
+    <!-- completed copy download -->
+    {% if brief.status == 'completed' and copy_file %}
+      <div class="alert alert-success d-flex align-items-center justify-content-between mb-4">
+        <span>&#10003;&ensp;Your copy is ready!</span>
+        <a href="{{ url_for('portal_client.download_copy', brief_id=brief.id) }}"
+           class="btn btn-success btn-sm">Download copy</a>
+      </div>
+    {% elif brief.status == 'in_progress' %}
+      <div class="alert alert-info mb-4">
+        We're working on your copy. We'll notify you when it's ready.
+      </div>
+    {% else %}
+      <div class="alert alert-warning mb-4">
+        Brief received — we'll start work on this soon.
+      </div>
+    {% endif %}
+
+    <!-- brief summary -->
+    <div class="card shadow-sm border-0 mb-3">
+      <div class="card-body p-4">
+        <h6 class="fw-bold text-uppercase text-muted small mb-3">Brief Details</h6>
+
+        <dl class="row mb-0">
+          <dt class="col-sm-5 text-muted fw-normal small">Product / service</dt>
+          <dd class="col-sm-7">{{ brief.product_name }}</dd>
+
+          <dt class="col-sm-5 text-muted fw-normal small">Description</dt>
+          <dd class="col-sm-7">{{ brief.product_description }}</dd>
+
+          <dt class="col-sm-5 text-muted fw-normal small">Target audience</dt>
+          <dd class="col-sm-7">{{ brief.target_audience }}</dd>
+
+          <dt class="col-sm-5 text-muted fw-normal small">Main benefit</dt>
+          <dd class="col-sm-7">{{ brief.main_benefit }}</dd>
+
+          <dt class="col-sm-5 text-muted fw-normal small">Biggest objection</dt>
+          <dd class="col-sm-7">{{ brief.biggest_objection }}</dd>
+
+          <dt class="col-sm-5 text-muted fw-normal small">Tone</dt>
+          <dd class="col-sm-7">{{ brief.tone | capitalize }}</dd>
+
+          <dt class="col-sm-5 text-muted fw-normal small">Type of copy</dt>
+          <dd class="col-sm-7">{{ brief.copy_type | capitalize }}</dd>
+
+          {% if brief.notes %}
+            <dt class="col-sm-5 text-muted fw-normal small">Notes</dt>
+            <dd class="col-sm-7">{{ brief.notes }}</dd>
+          {% endif %}
+
+          <dt class="col-sm-5 text-muted fw-normal small">Submitted</dt>
+          <dd class="col-sm-7 mb-0">{{ brief.created_at[:16] | replace('T', ' ') }}</dd>
+        </dl>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

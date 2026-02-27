@@ -1,0 +1,130 @@
+{% extends "portal/base.html" %}
+{% block title %}{{ brief.title }} — Admin{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+  <a href="{{ url_for('portal_admin.dashboard') }}" class="text-muted small text-decoration-none">
+    &larr; Back to Dashboard
+  </a>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+
+    <!-- header -->
+    <div class="d-flex align-items-start justify-content-between mb-3">
+      <div>
+        <h4 class="fw-bold mb-0">{{ brief.title }}</h4>
+        <p class="text-muted small mb-0">
+          {{ brief.client_name }} &middot; {{ brief.client_email }}
+        </p>
+      </div>
+      <span class="badge badge-status-{{ brief.status }} rounded-pill fs-6 ms-3">
+        {{ brief.status | replace('_', ' ') | title }}
+      </span>
+    </div>
+
+    <!-- status actions -->
+    <div class="card shadow-sm border-0 mb-3">
+      <div class="card-body p-4">
+        <h6 class="fw-bold text-uppercase text-muted small mb-3">Actions</h6>
+
+        {% if error %}
+          <div class="alert alert-danger py-2 small mb-3">{{ error }}</div>
+        {% endif %}
+
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          {% if brief.status == 'pending' %}
+            <form method="POST">
+              <input type="hidden" name="action" value="mark_in_progress">
+              <button class="btn btn-outline-primary btn-sm">Mark In Progress</button>
+            </form>
+          {% endif %}
+          {% if brief.status != 'completed' %}
+            <form method="POST">
+              <input type="hidden" name="action" value="mark_complete">
+              <button class="btn btn-outline-success btn-sm">Mark Complete</button>
+            </form>
+          {% endif %}
+          {% if brief.status == 'completed' and not copy_file %}
+            <span class="text-muted small align-self-center">Marked complete — upload the copy file below.</span>
+          {% endif %}
+          {% if brief.status == 'completed' and copy_file %}
+            <span class="text-success small align-self-center">&#10003; Copy delivered on {{ copy_file.uploaded_at[:10] }}</span>
+          {% endif %}
+        </div>
+
+        <!-- upload copy -->
+        <h6 class="fw-bold text-uppercase text-muted small mb-2">Upload Completed Copy</h6>
+        <form method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="upload_copy">
+          <div class="input-group">
+            <input type="file" class="form-control form-control-sm"
+                   name="copy_file" accept=".txt,.pdf,.doc,.docx" required>
+            <button class="btn btn-dark btn-sm" type="submit">Upload &amp; Complete</button>
+          </div>
+          <div class="form-text">Accepted: .txt, .pdf, .doc, .docx — replaces any previous file.</div>
+        </form>
+
+        {% if copy_file %}
+          <div class="mt-3 p-3 bg-light rounded d-flex justify-content-between align-items-center">
+            <div>
+              <span class="small fw-semibold">Current file:</span>
+              <span class="small text-muted ms-1">{{ copy_file.original_filename }}</span>
+            </div>
+            <span class="text-muted" style="font-size:.78rem">
+              {{ copy_file.uploaded_at[:10] }}
+            </span>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- brief details -->
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <h6 class="fw-bold text-uppercase text-muted small mb-3">Brief Details</h6>
+
+        <dl class="row mb-0">
+          <dt class="col-sm-4 text-muted fw-normal small">Product / service</dt>
+          <dd class="col-sm-8">{{ brief.product_name }}</dd>
+
+          <dt class="col-sm-4 text-muted fw-normal small">Description</dt>
+          <dd class="col-sm-8">{{ brief.product_description }}</dd>
+
+          <dt class="col-sm-4 text-muted fw-normal small">Target audience</dt>
+          <dd class="col-sm-8">{{ brief.target_audience }}</dd>
+
+          <dt class="col-sm-4 text-muted fw-normal small">Main benefit</dt>
+          <dd class="col-sm-8">{{ brief.main_benefit }}</dd>
+
+          <dt class="col-sm-4 text-muted fw-normal small">Biggest objection</dt>
+          <dd class="col-sm-8">{{ brief.biggest_objection }}</dd>
+
+          <dt class="col-sm-4 text-muted fw-normal small">Tone</dt>
+          <dd class="col-sm-8">{{ brief.tone | capitalize }}</dd>
+
+          <dt class="col-sm-4 text-muted fw-normal small">Type of copy</dt>
+          <dd class="col-sm-8">{{ brief.copy_type | capitalize }}</dd>
+
+          {% if brief.notes %}
+            <dt class="col-sm-4 text-muted fw-normal small">Notes</dt>
+            <dd class="col-sm-8">{{ brief.notes }}</dd>
+          {% endif %}
+
+          <dt class="col-sm-4 text-muted fw-normal small">Submitted</dt>
+          <dd class="col-sm-8 {% if not brief.completed_at %}mb-0{% endif %}">
+            {{ brief.created_at[:16] | replace('T', ' ') }}
+          </dd>
+
+          {% if brief.completed_at %}
+            <dt class="col-sm-4 text-muted fw-normal small">Completed</dt>
+            <dd class="col-sm-8 mb-0">{{ brief.completed_at[:16] | replace('T', ' ') }}</dd>
+          {% endif %}
+        </dl>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
