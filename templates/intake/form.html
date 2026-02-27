@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copy Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2.5rem 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 640px;
+      height: fit-content;
+    }
+
+    .nav {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.75rem;
+      border-bottom: 1.5px solid #eee;
+      padding-bottom: .75rem;
+    }
+
+    .nav-link {
+      font-size: .8rem;
+      font-weight: 600;
+      color: #888;
+      text-decoration: none;
+      padding: .3rem .65rem;
+      border-radius: 4px;
+      transition: color .15s;
+    }
+
+    .nav-link:hover { color: #5b5bf8; }
+    .nav-link.active { color: #5b5bf8; background: #f0f0ff; }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: .35rem;
+    }
+
+    .subtitle {
+      color: #666;
+      font-size: .9rem;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      display: block;
+      font-size: .85rem;
+      font-weight: 600;
+      margin-bottom: .4rem;
+      color: #333;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      padding: .75rem 1rem;
+      font-size: .95rem;
+      font-family: inherit;
+      color: #1a1a1a;
+      background: #fafafa;
+      transition: border-color .15s;
+    }
+
+    textarea { resize: vertical; }
+
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #5b5bf8;
+      background: #fff;
+    }
+
+    .field { margin-bottom: 1.25rem; }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .row .field { margin-bottom: 0; }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: .85rem;
+      background: #5b5bf8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, transform .1s;
+      margin-top: .25rem;
+    }
+
+    button[type="submit"]:hover  { background: #4a4ae0; }
+    button[type="submit"]:active { transform: scale(.98); }
+
+    .error {
+      background: #fff3f3;
+      border: 1.5px solid #f5a0a0;
+      border-radius: 8px;
+      padding: .85rem 1rem;
+      color: #b00;
+      font-size: .9rem;
+      margin-top: 1.5rem;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <nav class="nav">
+      <a href="/" class="nav-link">Cold DM Generator</a>
+      <a href="/intake" class="nav-link active">Copy Generator</a>
+    </nav>
+
+    <h1>Copy Generator</h1>
+    <p class="subtitle">Fill in your product details — get three distinct variations of your requested copy.</p>
+
+    <form method="POST">
+      <div class="field">
+        <label for="product_name">Product name</label>
+        <input type="text" id="product_name" name="product_name"
+          placeholder="e.g. GlowSerum Pro"
+          value="{{ form_data.get('product_name', '') }}" />
+      </div>
+
+      <div class="field">
+        <label for="product_description">Product description</label>
+        <textarea id="product_description" name="product_description" rows="3"
+          placeholder="What does it do and what makes it different?">{{ form_data.get('product_description', '') }}</textarea>
+      </div>
+
+      <div class="field">
+        <label for="target_audience">Target audience</label>
+        <input type="text" id="target_audience" name="target_audience"
+          placeholder="e.g. Women 25–40 with sensitive skin"
+          value="{{ form_data.get('target_audience', '') }}" />
+      </div>
+
+      <div class="field">
+        <label for="main_benefit">Main benefit</label>
+        <input type="text" id="main_benefit" name="main_benefit"
+          placeholder="e.g. Visibly reduces redness in 7 days"
+          value="{{ form_data.get('main_benefit', '') }}" />
+      </div>
+
+      <div class="field">
+        <label for="biggest_objection">Biggest objection customers have</label>
+        <input type="text" id="biggest_objection" name="biggest_objection"
+          placeholder="e.g. It's too expensive for a daily serum"
+          value="{{ form_data.get('biggest_objection', '') }}" />
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="tone">Tone of voice</label>
+          <select id="tone" name="tone">
+            {% for t in tones %}
+              <option value="{{ t }}"
+                {% if form_data.get('tone') == t %}selected{% endif %}>
+                {{ t | capitalize }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="copy_type">Type of copy</label>
+          <select id="copy_type" name="copy_type">
+            {% for ct in copy_types %}
+              <option value="{{ ct }}"
+                {% if form_data.get('copy_type') == ct %}selected{% endif %}>
+                {{ ct | capitalize }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <button type="submit">Generate Copy</button>
+    </form>
+
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copy Generator — Results</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2.5rem 1rem;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 640px;
+      height: fit-content;
+    }
+
+    .nav {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.75rem;
+      border-bottom: 1.5px solid #eee;
+      padding-bottom: .75rem;
+    }
+
+    .nav-link {
+      font-size: .8rem;
+      font-weight: 600;
+      color: #888;
+      text-decoration: none;
+      padding: .3rem .65rem;
+      border-radius: 4px;
+      transition: color .15s;
+    }
+
+    .nav-link:hover { color: #5b5bf8; }
+    .nav-link.active { color: #5b5bf8; background: #f0f0ff; }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: .35rem;
+    }
+
+    .meta {
+      color: #666;
+      font-size: .9rem;
+      margin-bottom: 2rem;
+    }
+
+    .meta strong { color: #1a1a1a; }
+
+    .variation {
+      border: 1.5px solid #eee;
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .variation-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .75rem;
+    }
+
+    .variation-label {
+      font-size: .8rem;
+      font-weight: 700;
+      color: #5b5bf8;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .copy-btn {
+      font-size: .8rem;
+      font-weight: 600;
+      color: #5b5bf8;
+      background: none;
+      border: 1.5px solid #5b5bf8;
+      border-radius: 6px;
+      padding: .3rem .75rem;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+
+    .copy-btn:hover { background: #5b5bf8; color: #fff; }
+
+    .variation-text {
+      font-size: .97rem;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #f8f8ff;
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      white-space: pre-wrap;
+    }
+
+    .actions {
+      margin-top: 1.75rem;
+      padding-top: 1.5rem;
+      border-top: 1.5px solid #eee;
+      display: flex;
+      gap: .75rem;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: .8rem;
+      background: #5b5bf8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background .15s;
+    }
+
+    .btn-primary:hover { background: #4a4ae0; }
+
+    .btn-secondary {
+      flex: 1;
+      padding: .8rem;
+      background: none;
+      color: #5b5bf8;
+      border: 1.5px solid #5b5bf8;
+      border-radius: 8px;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      transition: background .15s, color .15s;
+    }
+
+    .btn-secondary:hover { background: #5b5bf8; color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <nav class="nav">
+      <a href="/" class="nav-link">Cold DM Generator</a>
+      <a href="/intake" class="nav-link active">Copy Generator</a>
+    </nav>
+
+    <h1>Your Copy Variations</h1>
+    <p class="meta">
+      <strong>{{ form_data.product_name }}</strong> &mdash;
+      {{ form_data.copy_type | capitalize }} &middot; {{ form_data.tone | capitalize }} tone
+    </p>
+
+    {% for v in variations %}
+      <div class="variation">
+        <div class="variation-header">
+          <span class="variation-label">Variation {{ loop.index }}</span>
+          <button class="copy-btn" onclick="copyVariation({{ loop.index0 }})">Copy</button>
+        </div>
+        <div class="variation-text" id="variation-{{ loop.index0 }}">{{ v }}</div>
+      </div>
+    {% endfor %}
+
+    <div class="actions">
+      <a href="/intake" class="btn-secondary">Generate new</a>
+      <a href="/" class="btn-primary">Try DM Generator</a>
+    </div>
+  </div>
+
+  <script>
+    function copyVariation(idx) {
+      const text = document.getElementById("variation-" + idx).innerText;
+      const btns = document.querySelectorAll(".copy-btn");
+      const btn = btns[idx];
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = "Copied!";
+        setTimeout(() => btn.textContent = "Copy", 1800);
+      }).catch(() => {
+        btn.textContent = "Copy failed";
+        setTimeout(() => btn.textContent = "Copy", 1800);
+      });
+    }
+  </script>
+</body>
+</html>

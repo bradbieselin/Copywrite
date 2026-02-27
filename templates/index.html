@@ -33,6 +33,27 @@
       margin-bottom: .35rem;
     }
 
+    .nav {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1.75rem;
+      border-bottom: 1.5px solid #eee;
+      padding-bottom: .75rem;
+    }
+
+    .nav-link {
+      font-size: .8rem;
+      font-weight: 600;
+      color: #888;
+      text-decoration: none;
+      padding: .3rem .65rem;
+      border-radius: 4px;
+      transition: color .15s;
+    }
+
+    .nav-link:hover { color: #5b5bf8; }
+    .nav-link.active { color: #5b5bf8; background: #f0f0ff; }
+
     .subtitle {
       color: #666;
       font-size: .9rem;
@@ -151,6 +172,10 @@
 </head>
 <body>
   <div class="card">
+    <nav class="nav">
+      <a href="/" class="nav-link active">Cold DM Generator</a>
+      <a href="/intake" class="nav-link">Copy Generator</a>
+    </nav>
     <h1>Cold DM Generator</h1>
     <p class="subtitle">Paste a brand's Instagram bio and a sample caption — get a personalised cold DM in seconds.</p>
 
