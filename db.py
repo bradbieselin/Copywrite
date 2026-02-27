@@ -125,6 +125,16 @@ def init_portal_db():
         if "draft" not in existing_cols:
             conn.execute("ALTER TABLE briefs ADD COLUMN draft TEXT")
 
+        # Migrate: add `file_type` column to copy_files for existing databases.
+        file_cols = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(copy_files)").fetchall()
+        }
+        if "file_type" not in file_cols:
+            conn.execute(
+                "ALTER TABLE copy_files ADD COLUMN file_type TEXT NOT NULL DEFAULT 'delivery'"
+            )
+
         admin = conn.execute(
             "SELECT id FROM portal_users WHERE role='admin' LIMIT 1"
         ).fetchone()
@@ -282,28 +292,48 @@ def save_copy_file(
     original_filename: str,
     storage_filename: str,
     uploaded_by: int,
+    file_type: str = "delivery",
 ) -> int:
     with sqlite3.connect(DB_PATH) as conn:
-        conn.execute("DELETE FROM copy_files WHERE brief_id = ?", (brief_id,))
+        if file_type == "delivery":
+            # Replace any existing delivery file
+            conn.execute(
+                "DELETE FROM copy_files WHERE brief_id = ? AND file_type = 'delivery'",
+                (brief_id,),
+            )
         cur = conn.execute(
             """
             INSERT INTO copy_files
-              (brief_id, original_filename, storage_filename, uploaded_by)
-            VALUES (?,?,?,?)
+              (brief_id, original_filename, storage_filename, uploaded_by, file_type)
+            VALUES (?,?,?,?,?)
             """,
-            (brief_id, original_filename, storage_filename, uploaded_by),
+            (brief_id, original_filename, storage_filename, uploaded_by, file_type),
         )
         return cur.lastrowid
 
 
 def get_copy_file(brief_id: int) -> dict | None:
+    """Return the latest delivery file for a brief."""
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row
         row = conn.execute(
-            "SELECT * FROM copy_files WHERE brief_id = ? ORDER BY uploaded_at DESC LIMIT 1",
+            "SELECT * FROM copy_files WHERE brief_id = ? AND file_type = 'delivery' "
+            "ORDER BY uploaded_at DESC LIMIT 1",
             (brief_id,),
         ).fetchone()
         return _row_to_dict(row)
+
+
+def get_reference_files(brief_id: int) -> list[dict]:
+    """Return all reference files uploaded by the client for a brief."""
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT * FROM copy_files WHERE brief_id = ? AND file_type = 'reference' "
+            "ORDER BY uploaded_at ASC",
+            (brief_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
 
 
 # ── drafts ────────────────────────────────────────────────────────────────────

@@ -90,10 +90,12 @@ def brief_detail(brief_id):
 
     brief = db_module.get_brief(brief_id)
     copy_file = db_module.get_copy_file(brief_id)
+    reference_files = db_module.get_reference_files(brief_id)
     return render_template(
         "portal/admin/brief_detail.html",
         brief=brief,
         copy_file=copy_file,
+        reference_files=reference_files,
         error=error,
     )
 

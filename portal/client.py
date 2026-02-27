@@ -2,11 +2,13 @@
 
 import os
 import threading
+import uuid
 
 from flask import (
     Blueprint, render_template, request, redirect,
     url_for, session, flash, send_file, current_app,
 )
+from werkzeug.utils import secure_filename
 
 import db as db_module
 from portal.auth import login_required
@@ -37,6 +39,22 @@ def _start_automation(brief_id: int, app) -> None:
 
 TONES = ["professional", "casual", "bold", "friendly"]
 COPY_TYPES = ["email", "Instagram caption", "Facebook ad", "landing page headline"]
+_REF_ALLOWED = {"jpg", "jpeg", "png", "gif", "webp", "pdf", "doc", "docx", "txt", "zip"}
+
+
+def _ref_allowed(filename: str) -> bool:
+    return "." in filename and filename.rsplit(".", 1)[1].lower() in _REF_ALLOWED
+
+
+def _save_reference_files(brief_id: int, files, upload_dir: str, uploader_id: int) -> None:
+    """Save any uploaded reference files and record them in the DB."""
+    os.makedirs(upload_dir, exist_ok=True)
+    for f in files:
+        if f and f.filename and _ref_allowed(f.filename):
+            original = secure_filename(f.filename)
+            storage = f"ref_{brief_id}_{uuid.uuid4().hex}_{original}"
+            f.save(os.path.join(upload_dir, storage))
+            db_module.save_copy_file(brief_id, original, storage, uploader_id, "reference")
 _REQUIRED = [
     "title", "product_name", "product_description",
     "target_audience", "main_benefit", "biggest_objection",
@@ -69,6 +87,15 @@ def new_brief():
             error = "Invalid copy type selection."
         else:
             brief_id = db_module.create_brief(session["user_id"], form_data)
+            # Save any optional reference files
+            ref_files = request.files.getlist("reference_files")
+            if ref_files:
+                _save_reference_files(
+                    brief_id,
+                    ref_files,
+                    current_app.config["UPLOAD_FOLDER"],
+                    session["user_id"],
+                )
             _start_automation(brief_id, current_app)
             flash("Brief submitted! We'll be in touch.", "success")
             return redirect(url_for("portal_client.brief_detail", brief_id=brief_id))
@@ -90,8 +117,12 @@ def brief_detail(brief_id):
         flash("Brief not found.", "danger")
         return redirect(url_for("portal_client.dashboard"))
     copy_file = db_module.get_copy_file(brief_id)
+    reference_files = db_module.get_reference_files(brief_id)
     return render_template(
-        "portal/client/brief_detail.html", brief=brief, copy_file=copy_file
+        "portal/client/brief_detail.html",
+        brief=brief,
+        copy_file=copy_file,
+        reference_files=reference_files,
     )
 
 

@@ -80,6 +80,29 @@
       </div>
     </div>
 
+    <!-- client reference files -->
+    {% if reference_files %}
+    <div class="card shadow-sm border-0 mb-3">
+      <div class="card-body p-4">
+        <h6 class="fw-bold text-uppercase text-muted small mb-3">
+          Client Reference Files
+          <span class="badge bg-secondary ms-1" style="font-size:.7rem">{{ reference_files | length }}</span>
+        </h6>
+        <ul class="list-group list-group-flush">
+          {% for rf in reference_files %}
+            <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+              <span class="small">📎 {{ rf.original_filename }}</span>
+              <span class="text-muted" style="font-size:.78rem">{{ rf.uploaded_at[:10] }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+        <p class="text-muted small mb-0 mt-2">
+          Files are stored on the server. Ask the client to re-upload or check your uploads folder if you need access.
+        </p>
+      </div>
+    </div>
+    {% endif %}
+
     <!-- auto-generated first draft -->
     <div class="card shadow-sm border-0 mb-3">
       <div class="card-body p-4">

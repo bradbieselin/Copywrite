@@ -19,7 +19,7 @@
           <div class="alert alert-danger py-2 small">{{ error }}</div>
         {% endif %}
 
-        <form method="POST" novalidate>
+        <form method="POST" enctype="multipart/form-data" novalidate>
 
           <div class="mb-3">
             <label class="form-label fw-semibold" for="title">
@@ -104,12 +104,24 @@
             </div>
           </div>
 
-          <div class="mb-4">
+          <div class="mb-3">
             <label class="form-label fw-semibold" for="notes">
               Additional notes <span class="text-muted fw-normal">(optional)</span>
             </label>
             <textarea class="form-control" id="notes" name="notes" rows="3"
                       placeholder="Anything else we should know — references, constraints, examples you like…">{{ form_data.get('notes', '') }}</textarea>
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="reference_files">
+              Reference files <span class="text-muted fw-normal">(optional)</span>
+            </label>
+            <input type="file" class="form-control" id="reference_files" name="reference_files"
+                   multiple accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.doc,.docx,.txt,.zip">
+            <div class="form-text">
+              Upload reference images, mood boards, example copy, or anything that helps.
+              Accepted: JPG, PNG, GIF, WEBP, PDF, DOC, DOCX, TXT, ZIP &mdash; up to 16 MB total.
+            </div>
           </div>
 
           <div class="d-grid">
