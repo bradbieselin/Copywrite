@@ -33,4 +33,8 @@ def contact():
         return redirect(url_for("landing.index") + "#contact")
 
     db_module.save_contact(name, email, message)
+    current_app.logger.info(
+        "Contact form submission — name: %r  email: %r  message: %r",
+        name, email, message[:200],
+    )
     return redirect(url_for("landing.index") + "?sent=1#contact")

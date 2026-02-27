@@ -270,8 +270,69 @@
       gap: .75rem;
     }
 
+    /* ── HAMBURGER + MOBILE NAV ── */
+    .nav-mobile-right { display: none; }
+
+    .hamburger {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: .35rem;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      border-radius: 4px;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--text);
+      border-radius: 2px;
+      transition: transform .25s ease, opacity .25s ease;
+    }
+
+    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,.98);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
+      z-index: 99;
+    }
+
+    .mobile-menu.open { display: block; }
+
+    .mobile-menu ul {
+      list-style: none;
+      padding: .5rem 0 .75rem;
+    }
+
+    .mobile-menu ul li a {
+      display: block;
+      padding: .875rem 1.5rem;
+      font-size: .95rem;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      transition: color .15s, background .15s;
+    }
+
+    .mobile-menu ul li:last-child a { border-bottom: none; }
+    .mobile-menu ul li a:hover { color: var(--indigo); background: #f8f8ff; }
+
     /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
+    @media (max-width: 767px) {
       .about-section {
         grid-template-columns: 1fr;
         gap: 2.5rem;
@@ -286,9 +347,13 @@
         aspect-ratio: 1 / 1;
       }
 
-      nav { padding: 0 1rem; }
-      .nav-links { gap: 1rem; }
-      .nav-links li:not(:last-child):not(:nth-last-child(2)) { display: none; }
+      nav { padding: 0 1rem; overflow: visible; }
+      .nav-links { display: none; }
+      .nav-mobile-right {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+      }
     }
   </style>
 </head>
@@ -299,13 +364,30 @@
     <a href="/" class="nav-logo">CopyDTC</a>
     <ul class="nav-links">
       <li><a href="/#services">Services</a></li>
-      <li><a href="/#portfolio">Work</a></li>
-      <li><a href="/#reviews">Reviews</a></li>
       <li><a href="/about" class="active">About</a></li>
       <li><a href="/#contact">Contact</a></li>
       <li><a href="/portal/login" class="btn-login">Client Login</a></li>
     </ul>
+
+    <!-- Mobile: Client Login + Hamburger -->
+    <div class="nav-mobile-right">
+      <a href="/portal/login" class="btn-login">Client Login</a>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
   </nav>
+
+  <!-- Mobile dropdown menu — fixed below nav -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <ul>
+      <li><a href="/#services">Services</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="/#contact">Contact</a></li>
+    </ul>
+  </div>
 
   <!-- ── PAGE HEADER ── -->
   <div class="page-header">
@@ -389,5 +471,44 @@
     </div>
   </footer>
 
+  <script>
+    (function () {
+      var btn  = document.getElementById('hamburger');
+      var menu = document.getElementById('mobileMenu');
+
+      function openMenu() {
+        menu.classList.add('open');
+        btn.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+        menu.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeMenu() {
+        menu.classList.remove('open');
+        btn.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        menu.setAttribute('aria-hidden', 'true');
+      }
+
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        menu.classList.contains('open') ? closeMenu() : openMenu();
+      });
+
+      menu.querySelectorAll('a').forEach(function (link) {
+        link.addEventListener('click', closeMenu);
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+          closeMenu();
+        }
+      });
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeMenu();
+      });
+    })();
+  </script>
 </body>
 </html>

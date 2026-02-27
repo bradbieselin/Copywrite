@@ -419,7 +419,7 @@
 
     .mobile-menu {
       display: none;
-      position: absolute;
+      position: fixed;
       top: 60px;
       left: 0;
       right: 0;
@@ -475,8 +475,6 @@
     <!-- Desktop nav links (hidden on mobile) -->
     <ul class="nav-links">
       <li><a href="#services">Services</a></li>
-      <li><a href="#portfolio">Work</a></li>
-      <li><a href="#reviews">Reviews</a></li>
       <li><a href="/about">About</a></li>
       <li><a href="#contact">Contact</a></li>
       <li><a href="/portal/login" class="btn-login">Client Login</a></li>
@@ -491,25 +489,23 @@
         <span></span>
       </button>
     </div>
-
-    <!-- Mobile dropdown (all links except Client Login) -->
-    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
-      <ul>
-        <li><a href="#services">Services</a></li>
-        <li><a href="#portfolio">Work</a></li>
-        <li><a href="#reviews">Reviews</a></li>
-        <li><a href="/about">About</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </div>
   </nav>
+
+  <!-- Mobile dropdown menu — outside <nav> so position:fixed works reliably -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <ul>
+      <li><a href="#services">Services</a></li>
+      <li><a href="/about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </div>
 
   <!-- ── HERO ── -->
   <section class="hero">
     <div class="hero-eyebrow">DTC Copywriter</div>
     <h1>Copy That <span>Converts.</span></h1>
     <p class="hero-sub">
-      Emails, ads, and landing pages written to turn browsers into buyers —
+      Emails, ads, and landing pages written to turn browsers into buyers,
       without sounding like every other brand in your feed.
     </p>
     <a href="#contact" class="hero-cta">Let's Work Together</a>
@@ -569,7 +565,7 @@
   </section>
 
   <!-- ── PORTFOLIO ── -->
-  <section id="portfolio">
+  <section id="portfolio" style="display:none">
     <div class="container">
       <div class="section-label">My Work</div>
       <h2 class="section-title">Portfolio</h2>
@@ -584,7 +580,7 @@
   </section>
 
   <!-- ── REVIEWS ── -->
-  <section id="reviews">
+  <section id="reviews" style="display:none">
     <div class="container">
       <div class="section-label">Client Feedback</div>
       <h2 class="section-title">What Clients Say</h2>
