@@ -4,7 +4,6 @@ Paste an Instagram brand's bio + a sample caption, get a personalized cold DM.
 """
 
 import os
-import sys
 import anthropic
 from flask import Flask, render_template, request
 
@@ -41,6 +40,8 @@ def generate_dm(bio: str, caption: str) -> str:
         messages=[{"role": "user", "content": user_message}],
     )
 
+    if not message.content:
+        raise RuntimeError("Claude returned an empty response.")
     return message.content[0].text.strip()
 
 

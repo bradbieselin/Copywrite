@@ -191,9 +191,12 @@
   <script>
     function copyDM() {
       const text = document.getElementById("dmText").innerText;
+      const btn = document.querySelector(".copy-btn");
       navigator.clipboard.writeText(text).then(() => {
-        const btn = document.querySelector(".copy-btn");
         btn.textContent = "Copied!";
+        setTimeout(() => btn.textContent = "Copy", 1800);
+      }).catch(() => {
+        btn.textContent = "Copy failed";
         setTimeout(() => btn.textContent = "Copy", 1800);
       });
     }
