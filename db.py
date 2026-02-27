@@ -228,6 +228,18 @@ def get_clients_with_stats() -> list[dict]:
         return [dict(r) for r in rows]
 
 
+def delete_client(client_id: int) -> None:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            "DELETE FROM copy_files WHERE brief_id IN "
+            "(SELECT id FROM briefs WHERE client_id = ?)", (client_id,)
+        )
+        conn.execute("DELETE FROM briefs WHERE client_id = ?", (client_id,))
+        conn.execute(
+            "DELETE FROM portal_users WHERE id = ? AND role = 'client'", (client_id,)
+        )
+
+
 # ── briefs ────────────────────────────────────────────────────────────────────
 
 def create_brief(client_id: int, form_data: dict) -> int:
@@ -276,6 +288,24 @@ def get_client_briefs(client_id: int) -> list[dict]:
         rows = conn.execute(
             "SELECT * FROM briefs WHERE client_id = ? ORDER BY created_at DESC",
             (client_id,),
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def get_active_briefs() -> list[dict]:
+    """Return all pending and in_progress briefs across all clients, oldest first."""
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT b.*, u.name AS client_name, u.email AS client_email
+            FROM   briefs b
+            JOIN   portal_users u ON b.client_id = u.id
+            WHERE  b.status IN ('pending', 'in_progress')
+            ORDER BY
+                CASE b.status WHEN 'pending' THEN 0 ELSE 1 END,
+                b.created_at ASC
+            """
         ).fetchall()
         return [dict(r) for r in rows]
 

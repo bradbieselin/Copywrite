@@ -52,6 +52,54 @@
   </div>
 </div>
 
+<!-- Action Needed -->
+{% if active_briefs %}
+<div class="mb-5">
+  <h5 class="fw-bold mb-3">
+    Action Needed
+    <span class="badge bg-danger ms-1" style="font-size:.7rem;vertical-align:middle">{{ active_briefs | length }}</span>
+  </h5>
+  <div class="card shadow-sm border-0">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th class="ps-4">Brief</th>
+            <th>Client</th>
+            <th>Type</th>
+            <th>Waiting</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for b in active_briefs %}
+            <tr>
+              <td class="ps-4 fw-semibold">{{ b.title }}</td>
+              <td class="text-muted small">{{ b.client_name }}</td>
+              <td class="text-muted small">{{ b.copy_type | capitalize }}</td>
+              <td class="text-muted small">
+                {% set days = ((now|default(none)) and 0) or 0 %}
+                {{ b.created_at[:10] }}
+              </td>
+              <td>
+                <span class="badge badge-status-{{ b.status }} rounded-pill">
+                  {{ b.status | replace('_', ' ') | title }}
+                </span>
+              </td>
+              <td class="pe-4 text-end">
+                <a href="{{ url_for('portal_admin.brief_detail', brief_id=b.id) }}"
+                   class="btn btn-outline-dark btn-sm">Open</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <!-- Stats strip -->
 <div class="row g-3 mb-5">
   <div class="col-sm-4">

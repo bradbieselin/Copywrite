@@ -8,6 +8,7 @@ from flask import (
     Blueprint, render_template, request, redirect,
     url_for, session, flash, send_file, current_app,
 )
+from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 
 import db as db_module
@@ -124,6 +125,32 @@ def brief_detail(brief_id):
         copy_file=copy_file,
         reference_files=reference_files,
     )
+
+
+@client_bp.route("/settings", methods=["GET", "POST"])
+@login_required
+def settings():
+    error = None
+    success = None
+
+    if request.method == "POST":
+        current_pw = request.form.get("current_password", "")
+        new_pw     = request.form.get("new_password", "").strip()
+        confirm_pw = request.form.get("confirm_password", "").strip()
+
+        user = db_module.get_user_by_email(session["user_email"])
+
+        if not check_password_hash(user["password_hash"], current_pw):
+            error = "Current password is incorrect."
+        elif len(new_pw) < 8:
+            error = "New password must be at least 8 characters."
+        elif new_pw != confirm_pw:
+            error = "Passwords do not match."
+        else:
+            db_module.update_password(session["user_id"], new_pw)
+            success = "Password updated successfully."
+
+    return render_template("portal/client/settings.html", error=error, success=success)
 
 
 @client_bp.route("/briefs/<int:brief_id>/download")

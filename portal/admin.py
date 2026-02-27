@@ -30,8 +30,12 @@ def _allowed(filename: str) -> bool:
 def dashboard():
     clients = db_module.get_clients_with_stats()
     stats = db_module.get_dashboard_stats()
+    active_briefs = db_module.get_active_briefs()
     return render_template(
-        "portal/admin/dashboard.html", clients=clients, stats=stats
+        "portal/admin/dashboard.html",
+        clients=clients,
+        stats=stats,
+        active_briefs=active_briefs,
     )
 
 
@@ -48,6 +52,34 @@ def client_detail(client_id):
     return render_template(
         "portal/admin/client_detail.html", client=client, briefs=briefs
     )
+
+
+@admin_bp.route("/clients/<int:client_id>/reset-password", methods=["POST"])
+@admin_required
+def reset_client_password(client_id):
+    client = db_module.get_client(client_id)
+    if not client:
+        flash("Client not found.", "danger")
+        return redirect(url_for("portal_admin.dashboard"))
+    new_pw = request.form.get("new_password", "").strip()
+    if len(new_pw) < 8:
+        flash("Password must be at least 8 characters.", "danger")
+    else:
+        db_module.update_password(client_id, new_pw)
+        flash(f"Password reset for {client['name']}.", "success")
+    return redirect(url_for("portal_admin.client_detail", client_id=client_id))
+
+
+@admin_bp.route("/clients/<int:client_id>/delete", methods=["POST"])
+@admin_required
+def delete_client(client_id):
+    client = db_module.get_client(client_id)
+    if not client:
+        flash("Client not found.", "danger")
+        return redirect(url_for("portal_admin.dashboard"))
+    db_module.delete_client(client_id)
+    flash(f"{client['name']} and all their briefs have been deleted.", "success")
+    return redirect(url_for("portal_admin.dashboard"))
 
 
 # ── brief detail / actions ────────────────────────────────────────────────────

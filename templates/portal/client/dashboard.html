@@ -1,11 +1,30 @@
 {% extends "portal/base.html" %}
-{% block title %}My Briefs — Copywrite Portal{% endblock %}
+{% block title %}My Briefs — CopyDTC Portal{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+
+{% set pending_count   = briefs | selectattr('status', 'equalto', 'pending')     | list | length %}
+{% set inprog_count    = briefs | selectattr('status', 'equalto', 'in_progress') | list | length %}
+{% set completed_count = briefs | selectattr('status', 'equalto', 'completed')   | list | length %}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-start mb-4">
   <div>
-    <h2 class="fw-bold mb-0">My Briefs</h2>
-    <p class="text-muted small mb-0">Track your copy requests and download completed work.</p>
+    <h2 class="fw-bold mb-1">Welcome back, {{ session.user_name.split()[0] }}.</h2>
+    <p class="text-muted small mb-0">
+      {% if briefs | length == 0 %}
+        No briefs yet — submit your first one to get started.
+      {% elif inprog_count > 0 %}
+        {{ inprog_count }} brief{{ 's' if inprog_count != 1 }} in progress
+        {%- if pending_count > 0 %} &middot; {{ pending_count }} pending{% endif %}
+        {%- if completed_count > 0 %} &middot; {{ completed_count }} delivered{% endif %}
+      {% elif pending_count > 0 %}
+        {{ pending_count }} brief{{ 's' if pending_count != 1 }} waiting to start
+        {%- if completed_count > 0 %} &middot; {{ completed_count }} delivered{% endif %}
+      {% else %}
+        {{ completed_count }} brief{{ 's' if completed_count != 1 }} delivered
+      {% endif %}
+    </p>
   </div>
   <a href="{{ url_for('portal_client.new_brief') }}" class="btn btn-dark">+ New Brief</a>
 </div>
@@ -16,16 +35,21 @@
       <a href="{{ url_for('portal_client.brief_detail', brief_id=b.id) }}"
          class="text-decoration-none text-dark">
         <div class="card shadow-sm border-0 brief-card">
-          <div class="card-body d-flex align-items-center justify-content-between py-3">
+          <div class="card-body d-flex align-items-center justify-content-between py-3 px-4">
             <div>
               <div class="fw-semibold">{{ b.title }}</div>
               <div class="text-muted small mt-1">
-                {{ b.copy_type | capitalize }}&ensp;&middot;&ensp;{{ b.tone | capitalize }}&ensp;&middot;&ensp;{{ b.created_at[:10] }}
+                {{ b.copy_type | capitalize }}&ensp;&middot;&ensp;{{ b.tone | capitalize }}&ensp;&middot;&ensp;Submitted {{ b.created_at[:10] }}
               </div>
             </div>
-            <span class="badge badge-status-{{ b.status }} rounded-pill ms-3 text-nowrap">
-              {{ b.status | replace('_', ' ') | title }}
-            </span>
+            <div class="d-flex align-items-center gap-3">
+              {% if b.status == 'completed' %}
+                <span class="text-success small fw-semibold" style="font-size:.8rem">&#8595; Ready to download</span>
+              {% endif %}
+              <span class="badge badge-status-{{ b.status }} rounded-pill text-nowrap">
+                {{ b.status | replace('_', ' ') | title }}
+              </span>
+            </div>
           </div>
         </div>
       </a>
@@ -34,7 +58,8 @@
 {% else %}
   <div class="card shadow-sm border-0 text-center py-5">
     <div class="card-body">
-      <p class="text-muted mb-3">You haven't submitted any briefs yet.</p>
+      <p class="fw-semibold mb-1">No briefs yet</p>
+      <p class="text-muted small mb-3">Submit a brief and we'll get to work on your copy.</p>
       <a href="{{ url_for('portal_client.new_brief') }}" class="btn btn-dark">Submit your first brief</a>
     </div>
   </div>
