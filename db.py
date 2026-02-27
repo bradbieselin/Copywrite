@@ -97,6 +97,14 @@ def init_portal_db():
             );
         """)
 
+        # Migrate: add `draft` column to briefs for existing databases.
+        existing_cols = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(briefs)").fetchall()
+        }
+        if "draft" not in existing_cols:
+            conn.execute("ALTER TABLE briefs ADD COLUMN draft TEXT")
+
         admin = conn.execute(
             "SELECT id FROM portal_users WHERE role='admin' LIMIT 1"
         ).fetchone()
@@ -268,3 +276,52 @@ def get_copy_file(brief_id: int) -> dict | None:
             (brief_id,),
         ).fetchone()
         return _row_to_dict(row)
+
+
+# ── drafts ────────────────────────────────────────────────────────────────────
+
+def save_draft(brief_id: int, draft: str) -> None:
+    """Persist an auto-generated draft against a brief."""
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            "UPDATE briefs SET draft = ? WHERE id = ?", (draft, brief_id)
+        )
+
+
+# ── admin dashboard stats ─────────────────────────────────────────────────────
+
+def get_dashboard_stats() -> dict:
+    """
+    Returns:
+      total_clients       — count of client accounts
+      briefs_this_month   — briefs submitted in the current calendar month
+      avg_turnaround_days — mean days from created_at → completed_at
+                            (completed briefs only; None if no data)
+    """
+    with sqlite3.connect(DB_PATH) as conn:
+        total_clients = conn.execute(
+            "SELECT COUNT(*) FROM portal_users WHERE role = 'client'"
+        ).fetchone()[0]
+
+        briefs_this_month = conn.execute(
+            """
+            SELECT COUNT(*) FROM briefs
+            WHERE strftime('%Y-%m', created_at) = strftime('%Y-%m', 'now')
+            """
+        ).fetchone()[0]
+
+        avg_row = conn.execute(
+            """
+            SELECT AVG(JULIANDAY(completed_at) - JULIANDAY(created_at))
+            FROM   briefs
+            WHERE  status = 'completed' AND completed_at IS NOT NULL
+            """
+        ).fetchone()
+        raw_avg = avg_row[0]
+        avg_turnaround_days = round(raw_avg, 1) if raw_avg is not None else None
+
+    return {
+        "total_clients": total_clients,
+        "briefs_this_month": briefs_this_month,
+        "avg_turnaround_days": avg_turnaround_days,
+    }
