@@ -342,3 +342,17 @@ def scraper_download():
         flash("No leads file found. Run the scraper first.", "warning")
         return redirect(url_for("portal_admin.scraper"))
     return send_file(csv_path, as_attachment=True, download_name="leads.csv")
+
+
+@admin_bp.route("/scraper/leads.json")
+@admin_required
+def scraper_leads_json():
+    import csv as csv_module
+    csv_path = _leads_csv_path()
+    if not os.path.exists(csv_path):
+        return jsonify([])
+    rows = []
+    with open(csv_path, newline="", encoding="utf-8") as f:
+        for row in csv_module.DictReader(f):
+            rows.append(row)
+    return jsonify(rows)

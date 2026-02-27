@@ -144,6 +144,38 @@ ecommerce</textarea>
 
 </div>
 
+{% if has_csv %}
+<!-- ── Leads table ── -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white border-bottom py-3 px-4 d-flex align-items-center justify-content-between">
+        <h6 class="fw-bold mb-0">Scraped Leads</h6>
+        <span class="text-muted small" id="leadCount">Loading&hellip;</span>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover table-sm mb-0 small" id="leadsTable">
+            <thead class="table-light">
+              <tr>
+                <th class="px-3 py-2">Account</th>
+                <th class="px-3 py-2">Followers</th>
+                <th class="px-3 py-2">Hashtag</th>
+                <th class="px-3 py-2">Bio</th>
+                <th class="px-3 py-2"></th>
+              </tr>
+            </thead>
+            <tbody id="leadsBody">
+              <tr><td colspan="5" class="text-center text-muted py-4">Loading leads&hellip;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <script>
 (function () {
   const logEl     = document.getElementById("logOutput");
@@ -202,6 +234,47 @@ ecommerce</textarea>
   }
 
   if (polling) { poll(); } else { scrollLog(); }
+
+  // ── Leads table ──────────────────────────────────────────────────────────
+  const leadsBody = document.getElementById("leadsBody");
+  const leadCount = document.getElementById("leadCount");
+
+  function loadLeads() {
+    if (!leadsBody) return;
+    fetch("{{ url_for('portal_admin.scraper_leads_json') }}")
+      .then(r => r.json())
+      .then(rows => {
+        if (!rows.length) {
+          leadsBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No leads in CSV yet.</td></tr>';
+          if (leadCount) leadCount.textContent = "0 leads";
+          return;
+        }
+        if (leadCount) leadCount.textContent = rows.length + " lead" + (rows.length !== 1 ? "s" : "");
+        leadsBody.innerHTML = rows.map(r => {
+          const bioTrunc = r.bio && r.bio.length > 80 ? r.bio.slice(0, 80) + "…" : (r.bio || "—");
+          const dmUrl = "/tools/dm?bio=" + encodeURIComponent(r.bio || "");
+          const followers = parseInt(r.follower_count || "0").toLocaleString();
+          return `<tr>
+            <td class="px-3 py-2">
+              <a href="${r.profile_url}" target="_blank" rel="noopener"
+                 class="fw-semibold text-decoration-none">@${r.username}</a>
+              ${r.full_name ? `<div class="text-muted" style="font-size:.78rem">${r.full_name}</div>` : ""}
+            </td>
+            <td class="px-3 py-2">${followers}</td>
+            <td class="px-3 py-2"><span class="badge bg-secondary fw-normal">#${r.hashtag}</span></td>
+            <td class="px-3 py-2" style="max-width:280px;color:#555">${bioTrunc}</td>
+            <td class="px-3 py-2 text-end">
+              <a href="${dmUrl}" class="btn btn-sm btn-outline-dark" target="_blank">Draft DM &rarr;</a>
+            </td>
+          </tr>`;
+        }).join("");
+      })
+      .catch(() => {
+        if (leadsBody) leadsBody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Failed to load leads.</td></tr>';
+      });
+  }
+
+  loadLeads();
 })();
 </script>
 

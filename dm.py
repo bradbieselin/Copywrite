@@ -48,8 +48,9 @@ def generate_dm(bio: str, caption: str) -> str:
 def index():
     dm = None
     error = None
-    bio = ""
-    caption = ""
+    # Allow pre-filling from the lead scraper via GET params
+    bio = request.args.get("bio", "")
+    caption = request.args.get("caption", "")
 
     if request.method == "POST":
         bio = request.form.get("bio", "").strip()
