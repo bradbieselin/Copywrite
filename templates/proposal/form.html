@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proposal Generator — Copywrite</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #f5f5f5;
+      color: #111;
+      min-height: 100vh;
+      padding: 32px 16px 64px;
+    }
+
+    nav {
+      max-width: 680px;
+      margin: 0 auto 24px;
+      display: flex;
+      gap: 20px;
+      font-size: 13px;
+    }
+    nav a {
+      color: #555;
+      text-decoration: none;
+    }
+    nav a:hover { color: #111; }
+    nav a.active { color: #5b5bf8; font-weight: 600; }
+
+    .card {
+      background: #fff;
+      max-width: 680px;
+      margin: 0 auto;
+      border-radius: 12px;
+      padding: 40px 44px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.08);
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+
+    .error {
+      background: #fff0f0;
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #b91c1c;
+      margin-bottom: 24px;
+    }
+
+    .section-divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 28px 0 20px;
+    }
+    .section-divider span {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: #888;
+      white-space: nowrap;
+    }
+    .section-divider::before,
+    .section-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: #e5e5e5;
+    }
+
+    .row {
+      display: grid;
+      gap: 16px;
+    }
+    .row-2 { grid-template-columns: 1fr 1fr; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+    label .req { color: #5b5bf8; }
+    label .opt { font-weight: 400; color: #999; font-size: 12px; }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #111;
+      background: #fff;
+      transition: border-color .15s;
+      appearance: none;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #5b5bf8;
+    }
+    input::placeholder, textarea::placeholder { color: #bbb; }
+    textarea { resize: vertical; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
+    .hint { font-size: 12px; color: #999; margin-top: 2px; }
+
+    .price-input-wrap {
+      position: relative;
+    }
+    .price-input-wrap input {
+      padding-left: 28px;
+    }
+    .price-symbol {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #888;
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: #5b5bf8;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      margin-top: 32px;
+      transition: background .15s, transform .1s;
+    }
+    .submit-btn:hover { background: #4a4ae8; }
+    .submit-btn:active { transform: scale(.99); }
+
+    @media (max-width: 560px) {
+      .card { padding: 28px 20px; }
+      .row-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/">Cold DM Generator</a>
+  <a href="/intake/">Copy Generator</a>
+  <a href="/proposal/" class="active">Proposal Generator</a>
+</nav>
+
+<div class="card">
+  <h1>Proposal Generator</h1>
+  <p class="subtitle">Fill in the details and get a print-ready client proposal in seconds.</p>
+
+  {% if error %}
+    <div class="error">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST" novalidate>
+
+    <div class="section-divider"><span>Your details</span></div>
+
+    <div class="field">
+      <label for="your_name">Your name or business <span class="req">*</span></label>
+      <input type="text" id="your_name" name="your_name"
+             value="{{ form_data.get('your_name', '') }}"
+             placeholder="e.g. Jane Smith Copywriting" required autofocus>
+    </div>
+
+    <div class="section-divider"><span>Client details</span></div>
+
+    <div class="row row-2">
+      <div class="field">
+        <label for="brand_name">Brand name <span class="req">*</span></label>
+        <input type="text" id="brand_name" name="brand_name"
+               value="{{ form_data.get('brand_name', '') }}"
+               placeholder="e.g. GlowSerum Co." required>
+      </div>
+      <div class="field">
+        <label for="niche">Niche <span class="req">*</span></label>
+        <input type="text" id="niche" name="niche"
+               value="{{ form_data.get('niche', '') }}"
+               placeholder="e.g. DTC skincare" required>
+      </div>
+    </div>
+
+    <div class="section-divider"><span>The proposal</span></div>
+
+    <div class="row row-2">
+      <div class="field">
+        <label for="service">Service you're offering <span class="req">*</span></label>
+        <input type="text" id="service" name="service"
+               value="{{ form_data.get('service', '') }}"
+               placeholder="e.g. 5-email welcome sequence" required>
+      </div>
+      <div class="field">
+        <label for="price">Investment <span class="req">*</span></label>
+        <input type="text" id="price" name="price"
+               value="{{ form_data.get('price', '') }}"
+               placeholder="e.g. $1,500" required>
+      </div>
+    </div>
+
+    <div class="section-divider"><span>Copy pain points you noticed</span></div>
+
+    <div class="row" style="gap:12px">
+      <div class="field">
+        <label for="pain_1">Pain point 1 <span class="req">*</span></label>
+        <input type="text" id="pain_1" name="pain_1"
+               value="{{ form_data.get('pain_1', '') }}"
+               placeholder="e.g. No clear value proposition above the fold" required>
+      </div>
+      <div class="field">
+        <label for="pain_2">Pain point 2 <span class="req">*</span></label>
+        <input type="text" id="pain_2" name="pain_2"
+               value="{{ form_data.get('pain_2', '') }}"
+               placeholder="e.g. Abandoned cart email doesn't address objections" required>
+      </div>
+      <div class="field">
+        <label for="pain_3">Pain point 3 <span class="opt">(optional)</span></label>
+        <input type="text" id="pain_3" name="pain_3"
+               value="{{ form_data.get('pain_3', '') }}"
+               placeholder="e.g. Instagram captions lead with features, not benefits">
+      </div>
+    </div>
+
+    <button type="submit" class="submit-btn">Generate Proposal →</button>
+
+  </form>
+</div>
+
+</body>
+</html>

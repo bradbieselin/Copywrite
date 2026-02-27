@@ -32,8 +32,10 @@ def create_app() -> Flask:
     # Public tools
     from dm import dm_bp
     from intake import intake_bp
+    from proposal import proposal_bp
     app.register_blueprint(dm_bp)
     app.register_blueprint(intake_bp, url_prefix="/intake")
+    app.register_blueprint(proposal_bp, url_prefix="/proposal")
 
     # Client portal
     from portal.auth import auth_bp
