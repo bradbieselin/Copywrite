@@ -28,6 +28,7 @@ _scraper_state: dict = {
     "finished_at": None,
 }
 _scraper_lock = threading.Lock()
+_scraper_stop_event = threading.Event()
 
 _ALLOWED = {"txt", "pdf", "doc", "docx"}
 
@@ -206,6 +207,34 @@ def create_client():
     return redirect(url_for("portal_admin.dashboard"))
 
 
+# ── create admin ──────────────────────────────────────────────────────────────
+
+@admin_bp.route("/admins/new", methods=["POST"])
+@admin_required
+def create_admin():
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip()
+    password = request.form.get("password", "").strip()
+
+    if not name or not email or not password:
+        flash("All fields are required to create an admin account.", "danger")
+        return redirect(url_for("portal_admin.dashboard"))
+    if len(password) < 8:
+        flash("Password must be at least 8 characters.", "danger")
+        return redirect(url_for("portal_admin.dashboard"))
+
+    try:
+        db_module.create_user(name, email, password, "admin")
+        flash(f"Admin account created for {email}.", "success")
+    except Exception as exc:
+        if "UNIQUE" in str(exc):
+            flash(f"{email} is already registered.", "danger")
+        else:
+            flash(f"Error creating account: {exc}", "danger")
+
+    return redirect(url_for("portal_admin.dashboard"))
+
+
 # ── settings (change password) ────────────────────────────────────────────────
 
 @admin_bp.route("/settings", methods=["GET", "POST"])
@@ -255,10 +284,14 @@ def _run_scraper_thread(hashtags: list[str], max_results: int, output_file: str,
             output_file=output_file,
             token=token,
             on_status=log,
+            stop_event=_scraper_stop_event,
         )
         with _scraper_lock:
-            _scraper_state["status"] = "done"
-            _scraper_state["summary"] = summary
+            if _scraper_stop_event.is_set():
+                _scraper_state["status"] = "stopped"
+            else:
+                _scraper_state["status"] = "done"
+                _scraper_state["summary"] = summary
             _scraper_state["finished_at"] = datetime.datetime.now().isoformat(timespec="seconds")
     except Exception as exc:
         with _scraper_lock:
@@ -310,6 +343,7 @@ def scraper_run():
     max_results = min(max(int(request.form.get("max_results", 200)), 10), 500)
     output_file = _leads_csv_path()
 
+    _scraper_stop_event.clear()
     with _scraper_lock:
         _scraper_state["status"] = "running"
         _scraper_state["log"] = []
@@ -324,6 +358,15 @@ def scraper_run():
     )
     t.start()
 
+    return redirect(url_for("portal_admin.scraper"))
+
+
+@admin_bp.route("/scraper/stop", methods=["POST"])
+@admin_required
+def scraper_stop():
+    with _scraper_lock:
+        if _scraper_state["status"] == "running":
+            _scraper_stop_event.set()
     return redirect(url_for("portal_admin.scraper"))
 
 

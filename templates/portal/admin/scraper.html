@@ -79,6 +79,14 @@ ecommerce</textarea>
 
         </form>
 
+        <form method="POST" action="{{ url_for('portal_admin.scraper_stop') }}"
+              id="stopForm" class="mt-2"
+              style="display:{% if state.status == 'running' %}block{% else %}none{% endif %}">
+          <button type="submit" class="btn btn-outline-danger w-100">
+            Stop Scraper
+          </button>
+        </form>
+
       </div>
     </div>
 
@@ -128,6 +136,7 @@ ecommerce</textarea>
           {% if state.status == 'running' %}bg-primary
           {% elif state.status == 'done' %}bg-success
           {% elif state.status == 'error' %}bg-danger
+          {% elif state.status == 'stopped' %}bg-warning text-dark
           {% else %}bg-secondary{% endif %}">
           {{ state.status | capitalize }}
         </span>
@@ -181,6 +190,7 @@ ecommerce</textarea>
   const logEl     = document.getElementById("logOutput");
   const badgeEl   = document.getElementById("statusBadge");
   const startBtn  = document.getElementById("startBtn");
+  const stopForm  = document.getElementById("stopForm");
   let   lastLen   = {{ state.log | length }};
   let   polling   = {{ 'true' if state.status == 'running' else 'false' }};
 
@@ -190,7 +200,7 @@ ecommerce</textarea>
   scrollLog();
 
   function updateBadge(status) {
-    const map = { running: "bg-primary", done: "bg-success", error: "bg-danger", idle: "bg-secondary" };
+    const map = { running: "bg-primary", done: "bg-success", error: "bg-danger", stopped: "bg-warning text-dark", idle: "bg-secondary" };
     badgeEl.className = "badge rounded-pill " + (map[status] || "bg-secondary");
     badgeEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
   }
@@ -218,12 +228,14 @@ ecommerce</textarea>
         if (data.status === "running") {
           startBtn.disabled = true;
           startBtn.textContent = "Running\u2026";
+          if (stopForm) stopForm.style.display = "block";
           setTimeout(poll, 2000);
         } else {
           startBtn.disabled = false;
           startBtn.textContent = "Start Scraper";
+          if (stopForm) stopForm.style.display = "none";
           // Reload so the summary card and download button appear
-          if (data.status === "done" || data.status === "error") {
+          if (data.status === "done" || data.status === "error" || data.status === "stopped") {
             setTimeout(() => { window.location.reload(); }, 1000);
           }
         }

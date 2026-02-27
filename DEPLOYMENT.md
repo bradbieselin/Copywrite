@@ -1,4 +1,4 @@
-# Deploying Copywrite to Railway
+# Deploying Copywrite to Railway (copydtc.com)
 
 ---
 
@@ -52,10 +52,10 @@ In your Railway service, go to the **Variables** tab and add:
 | `ANTHROPIC_API_KEY`   | `sk-ant-...` | From [console.anthropic.com](https://console.anthropic.com) |
 | `DB_PATH`             | `/data/copywrite.db` | Points to your persistent Volume |
 | `UPLOAD_FOLDER`       | `/data/uploads` | Points to your persistent Volume |
-| `APP_BASE_URL`        | `https://your-app.up.railway.app` | Update after first deploy with your real URL |
+| `APP_BASE_URL`        | `https://copydtc.com` | Update after first deploy with your real URL |
 | `SENDGRID_API_KEY`    | `SG....` | Optional — enables email notifications |
-| `SENDGRID_FROM_EMAIL` | `you@yourdomain.com` | Optional — must be verified in SendGrid |
-| `ADMIN_EMAIL`         | `you@youremail.com` | Optional — receives new brief notifications |
+| `SENDGRID_FROM_EMAIL` | `hello@copydtc.com` | Optional — must be verified in SendGrid |
+| `ADMIN_EMAIL`         | `you@copydtc.com` | Optional — receives new brief notifications |
 
 ---
 
@@ -81,19 +81,28 @@ That confirms the database initialized correctly on the Volume.
 
 ---
 
-## Step 7 — Update APP_BASE_URL
+## Step 7 — Add copydtc.com as a custom domain
 
-After your first deploy, copy the generated Railway URL from **Settings → Domains**
-and update the `APP_BASE_URL` variable to match (e.g. `https://copywrite-brad.up.railway.app`).
-This is what gets used in the email links sent to clients.
+1. In Railway: go to your service → **Settings → Networking → Custom Domain**
+2. Click **+ Custom Domain** and enter `copydtc.com`
+3. Railway will show you a DNS record to add — typically a **CNAME** pointing to a Railway-provided hostname (e.g. `xxx.up.railway.app`)
+4. Log in to your domain registrar where you bought **copydtc.com** and add that DNS record
+5. Wait for DNS propagation (usually a few minutes, up to an hour)
+6. Railway auto-provisions an SSL certificate via Let's Encrypt — HTTPS is handled automatically
+
+> **Tip:** You can also add `www.copydtc.com` as a second custom domain if you want the `www` subdomain to work. Add a second DNS entry pointing `www` to the same Railway hostname.
 
 ---
 
-## Step 8 — (Optional) Custom domain
+## Step 8 — Update APP_BASE_URL
 
-1. In Railway: **Settings → Networking → Custom Domain**
-2. Add your domain and follow the DNS instructions
-3. Update `APP_BASE_URL` to your custom domain (e.g. `https://portal.yourdomain.com`)
+Once copydtc.com is resolving correctly, update the `APP_BASE_URL` environment variable in Railway to:
+
+```
+APP_BASE_URL=https://copydtc.com
+```
+
+This is used in email links sent to clients, so it must match your live domain.
 
 ---
 
@@ -104,10 +113,10 @@ SECRET_KEY=<generate with: python -c "import secrets; print(secrets.token_hex(32
 ANTHROPIC_API_KEY=sk-ant-...
 DB_PATH=/data/copywrite.db
 UPLOAD_FOLDER=/data/uploads
-APP_BASE_URL=https://your-app.up.railway.app
+APP_BASE_URL=https://copydtc.com
 SENDGRID_API_KEY=SG....
-SENDGRID_FROM_EMAIL=you@yourdomain.com
-ADMIN_EMAIL=you@youremail.com
+SENDGRID_FROM_EMAIL=hello@copydtc.com
+ADMIN_EMAIL=you@copydtc.com
 ```
 
 ---
@@ -124,6 +133,9 @@ ADMIN_EMAIL=you@youremail.com
 - [ ] `UPLOAD_FOLDER` set to `/data/uploads`
 - [ ] App deployed — Logs show database init message
 - [ ] First login complete → password changed immediately
-- [ ] `APP_BASE_URL` updated to real Railway URL
-- [ ] (Optional) SendGrid configured
-- [ ] (Optional) Custom domain added
+- [ ] Custom domain `copydtc.com` added in Railway → Settings → Networking
+- [ ] DNS record added at your domain registrar pointing copydtc.com → Railway
+- [ ] SSL certificate confirmed (HTTPS green lock in browser)
+- [ ] `APP_BASE_URL` updated to `https://copydtc.com`
+- [ ] (Optional) `www.copydtc.com` added as second custom domain
+- [ ] (Optional) SendGrid configured with `hello@copydtc.com`

@@ -202,6 +202,7 @@ def run_scraper(
     output_file: str,
     token: str,
     on_status=None,
+    stop_event=None,
 ) -> dict:
     """
     Run the full scraper pipeline.
@@ -212,10 +213,14 @@ def run_scraper(
         output_file: Path for the output CSV.
         token:       Apify API token.
         on_status:   Optional callable(msg: str) for live progress updates.
+        stop_event:  Optional threading.Event; set it to request early termination.
 
     Returns:
         A summary dict with counts and the output file path.
     """
+    def stopped() -> bool:
+        return stop_event is not None and stop_event.is_set()
+
     log = lambda msg: _emit(msg, on_status)
 
     client = ApifyClient(token)
@@ -229,6 +234,9 @@ def run_scraper(
     username_to_hashtag: dict[str, str] = {}
 
     for hashtag in hashtags:
+        if stopped():
+            log("Stop requested — skipping remaining hashtags.")
+            break
         try:
             found = collect_usernames_for_hashtag(client, hashtag, max_results, on_status)
             for u in found:
@@ -263,6 +271,9 @@ def run_scraper(
     total_batches = (len(username_list) + PROFILE_BATCH_SIZE - 1) // PROFILE_BATCH_SIZE
 
     for i in range(0, len(username_list), PROFILE_BATCH_SIZE):
+        if stopped():
+            log("Stop requested — saving partial results.")
+            break
         batch = username_list[i: i + PROFILE_BATCH_SIZE]
         batch_num = i // PROFILE_BATCH_SIZE + 1
         log(f"Phase 2 — batch {batch_num}/{total_batches} ({len(batch)} accounts) ...")
