@@ -8,6 +8,15 @@
     <h2 class="fw-bold mb-1">Account</h2>
     <p class="text-muted small mb-4">{{ session.user_email }}</p>
 
+    {% if session.get('must_reset_password') %}
+    <div class="alert alert-warning d-flex align-items-start gap-2 mb-4" role="alert">
+      <span style="font-size:1.1rem">🔒</span>
+      <div>
+        <strong>Action required:</strong> Please set a new password to access your portal.
+      </div>
+    </div>
+    {% endif %}
+
     <div class="card shadow-sm border-0">
       <div class="card-header bg-white border-bottom py-3 px-4">
         <h6 class="fw-bold mb-0">Change Password</h6>

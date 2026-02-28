@@ -136,6 +136,13 @@ def init_portal_db():
                 "ALTER TABLE copy_files ADD COLUMN file_type TEXT NOT NULL DEFAULT 'delivery'"
             )
 
+        # Migrate: add `must_reset_password` column for new welcome-email flow.
+        if "must_reset_password" not in existing_cols:
+            conn.execute(
+                "ALTER TABLE portal_users "
+                "ADD COLUMN must_reset_password INTEGER NOT NULL DEFAULT 0"
+            )
+
         admin = conn.execute(
             "SELECT id FROM portal_users WHERE role='admin' LIMIT 1"
         ).fetchone()
@@ -177,6 +184,14 @@ def create_user(name: str, email: str, password: str, role: str) -> int:
              generate_password_hash(password), role),
         )
         return cur.lastrowid
+
+
+def set_must_reset_password(user_id: int, flag: bool) -> None:
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute(
+            "UPDATE portal_users SET must_reset_password = ? WHERE id = ?",
+            (1 if flag else 0, user_id),
+        )
 
 
 def update_password(user_id: int, new_password: str) -> None:

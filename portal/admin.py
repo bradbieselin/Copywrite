@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import secrets
 import threading
 import uuid
 
@@ -184,20 +185,27 @@ def _notify_client_completion(brief: dict, config: dict) -> None:
 @admin_bp.route("/clients/new", methods=["POST"])
 @admin_required
 def create_client():
-    name = request.form.get("name", "").strip()
+    name  = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip()
-    password = request.form.get("password", "").strip()
 
-    if not name or not email or not password:
-        flash("All fields are required to create a client account.", "danger")
+    if not name or not email:
+        flash("Name and email are required.", "danger")
         return redirect(url_for("portal_admin.dashboard"))
-    if len(password) < 8:
-        flash("Password must be at least 8 characters.", "danger")
-        return redirect(url_for("portal_admin.dashboard"))
+
+    temp_pw = secrets.token_urlsafe(10)
 
     try:
-        db_module.create_user(name, email, password, "client")
-        flash(f"Client account created for {email}.", "success")
+        user_id = db_module.create_user(name, email, temp_pw, "client")
+        db_module.set_must_reset_password(user_id, True)
+
+        # Send welcome email in background (fails silently if SendGrid not set up)
+        _send_welcome_async(name, email, temp_pw, current_app)
+
+        flash(
+            f"Account created for {email}. "
+            f"Temp password (shown once): {temp_pw}",
+            "success",
+        )
     except Exception as exc:
         if "UNIQUE" in str(exc):
             flash(f"{email} is already registered.", "danger")
@@ -205,6 +213,24 @@ def create_client():
             flash(f"Error creating account: {exc}", "danger")
 
     return redirect(url_for("portal_admin.dashboard"))
+
+
+def _send_welcome_async(name: str, email: str, temp_pw: str, app) -> None:
+    """Fire-and-forget welcome email in a daemon thread."""
+    from portal.automation import send_welcome_email
+    config = {k: app.config.get(k, "") for k in
+              ("SENDGRID_API_KEY", "SENDGRID_FROM_EMAIL", "APP_BASE_URL")}
+
+    def _run():
+        try:
+            send_welcome_email(name, email, temp_pw, config)
+        except Exception:
+            import logging
+            logging.getLogger(__name__).exception(
+                "Failed to send welcome email to %s.", email
+            )
+
+    threading.Thread(target=_run, daemon=True).start()
 
 
 # ── create admin ──────────────────────────────────────────────────────────────

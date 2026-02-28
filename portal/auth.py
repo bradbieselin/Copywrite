@@ -113,6 +113,10 @@ def login():
                 session["user_email"] = user["email"]
                 if user["role"] == "admin":
                     return redirect(_next_url(url_for("portal_admin.dashboard")))
+                if user.get("must_reset_password"):
+                    session["must_reset_password"] = True
+                    flash("Welcome! Please set a new password before continuing.", "warning")
+                    return redirect(url_for("portal_client.settings"))
                 return redirect(_next_url(url_for("portal_client.dashboard")))
 
             _record_failure(email)

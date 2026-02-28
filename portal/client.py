@@ -17,6 +17,14 @@ from portal.auth import login_required
 client_bp = Blueprint("portal_client", __name__)
 
 
+@client_bp.before_request
+def _enforce_password_reset():
+    """Redirect clients who must reset their password to the settings page."""
+    if session.get("must_reset_password") and request.endpoint != "portal_client.settings":
+        flash("Please set a new password before continuing.", "warning")
+        return redirect(url_for("portal_client.settings"))
+
+
 def _start_automation(brief_id: int, app) -> None:
     """
     Fetch the saved brief and run the full automation pipeline in a
@@ -148,6 +156,8 @@ def settings():
             error = "Passwords do not match."
         else:
             db_module.update_password(session["user_id"], new_pw)
+            db_module.set_must_reset_password(session["user_id"], False)
+            session.pop("must_reset_password", None)
             success = "Password updated successfully."
 
     return render_template("portal/client/settings.html", error=error, success=success)

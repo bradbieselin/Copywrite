@@ -227,6 +227,87 @@ def send_completion_notification(brief: dict, config: dict) -> None:
                 client_email, brief["id"])
 
 
+# ── welcome email (new client account) ───────────────────────────────────────
+
+def _welcome_email_html(name: str, email: str, password: str, login_url: str) -> str:
+    return f"""
+<div style="font-family:sans-serif;max-width:600px;color:#111">
+  <h2 style="margin-bottom:4px">Welcome to CopyDTC</h2>
+  <p style="color:#666;margin-top:0">Your client portal account is ready.</p>
+  <hr style="border:none;border-top:1px solid #e5e5e5">
+  <p style="font-size:15px;line-height:1.6">
+    Hi {name},<br><br>
+    Your account has been set up. Use the credentials below to log in.
+    You'll be prompted to choose a new password right after your first login.
+  </p>
+  <table style="background:#f5f5f5;border-radius:6px;padding:16px 20px;width:100%;border-collapse:collapse">
+    <tr>
+      <td style="padding:5px 0;color:#666;width:90px;font-size:14px">Email</td>
+      <td style="padding:5px 0;font-size:14px"><strong>{email}</strong></td>
+    </tr>
+    <tr>
+      <td style="padding:5px 0;color:#666;font-size:14px">Temp password</td>
+      <td style="padding:5px 0;font-size:14px"><strong>{password}</strong></td>
+    </tr>
+  </table>
+  <div style="margin-top:28px">
+    <a href="{login_url}"
+       style="background:#5b5bf8;color:#fff;padding:11px 22px;border-radius:8px;
+              text-decoration:none;font-size:14px;font-weight:600">
+      Log in to your portal →
+    </a>
+  </div>
+  <p style="font-size:13px;color:#999;margin-top:32px">
+    If you didn't expect this email, you can safely ignore it.
+  </p>
+</div>
+""".strip()
+
+
+def send_welcome_email(name: str, email: str, temp_password: str, config: dict) -> None:
+    """
+    Email a new client their temporary login credentials.
+    Silently skips if SendGrid is not configured.
+    """
+    api_key    = config.get("SENDGRID_API_KEY", "")
+    from_email = config.get("SENDGRID_FROM_EMAIL", "")
+    base_url   = config.get("APP_BASE_URL", "http://localhost:5000").rstrip("/")
+
+    if not api_key or not from_email:
+        logger.info("Welcome email skipped — SendGrid not configured.")
+        return
+
+    login_url = f"{base_url}/portal/login"
+    subject   = "Your CopyDTC portal account"
+
+    payload = json.dumps({
+        "personalizations": [{"to": [{"email": email, "name": name}]}],
+        "from": {"email": from_email},
+        "subject": subject,
+        "content": [{"type": "text/html",
+                     "value": _welcome_email_html(name, email, temp_password, login_url)}],
+    }).encode()
+
+    req = urllib.request.Request(
+        "https://api.sendgrid.com/v3/mail/send",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            status = resp.status
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode(errors="replace")
+        raise RuntimeError(f"SendGrid HTTP {exc.code}: {body}") from exc
+
+    if status not in (200, 201, 202):
+        raise RuntimeError(f"SendGrid returned unexpected status {status}.")
+    logger.info("Welcome email sent to %s.", email)
+
+
 # ── orchestrator ──────────────────────────────────────────────────────────────
 
 def run_brief_automation(brief: dict, config: dict) -> None:
