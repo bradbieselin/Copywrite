@@ -30,9 +30,10 @@
       --dark:     #0f0f1e;
       --dark-2:   #1a1a2e;
       --text:     #1a1a1a;
-      --muted:    #666;
-      --border:   #e5e5e5;
-      --bg:       #fafafa;
+      --muted:    #555;
+      --border:   #d8d8d8;
+      --bg:       #F4F4F4;
+      --bg-tint:  #EEEEF8;
       --green:    #22c55e;
     }
 
@@ -50,7 +51,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255,255,255,0.97);
+      background: rgba(244,244,244,0.97);
       backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--border);
       padding: 0 2rem;
@@ -260,7 +261,7 @@
     }
 
     /* ── SERVICES ── */
-    #services { background: #fff; }
+    #services { background: var(--bg-tint); }
 
     .services-grid {
       display: grid;
@@ -273,7 +274,7 @@
       border-radius: 14px;
       padding: 1.75rem;
       transition: border-color .2s, box-shadow .2s, transform .15s;
-      background: #fff;
+      background: var(--bg);
     }
 
     .service-card:hover {
@@ -301,7 +302,7 @@
     }
 
     /* ── PORTFOLIO ── */
-    #portfolio { background: var(--bg); }
+    #portfolio { background: var(--bg); }  /* #F4F4F4 */
 
     .portfolio-grid {
       display: grid;
@@ -310,7 +311,7 @@
     }
 
     .portfolio-card {
-      background: #fff;
+      background: var(--bg-tint);
       border: 1.5px solid var(--border);
       border-radius: 16px;
       overflow: hidden;
@@ -404,7 +405,7 @@
     }
 
     /* ── REVIEWS ── */
-    #reviews { background: #fff; }
+    #reviews { background: var(--bg-tint); }
 
     .reviews-grid {
       display: grid;
@@ -416,7 +417,7 @@
       border: 1.5px solid var(--border);
       border-radius: 16px;
       padding: 1.75rem;
-      background: #fff;
+      background: var(--bg);
       transition: box-shadow .2s, transform .15s;
       display: flex;
       flex-direction: column;
@@ -477,7 +478,7 @@
     }
 
     /* ── PROCESS ── */
-    #process { background: var(--bg); }
+    #process { background: var(--bg); }  /* #F4F4F4 */
 
     .process-steps {
       display: grid;
@@ -746,7 +747,7 @@
       top: 60px;
       left: 0;
       right: 0;
-      background: rgba(255,255,255,.98);
+      background: rgba(244,244,244,.98);
       backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--border);
       box-shadow: 0 8px 24px rgba(0,0,0,.08);
