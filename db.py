@@ -119,11 +119,11 @@ def init_portal_db():
         """)
 
         # Migrate: add `draft` column to briefs for existing databases.
-        existing_cols = {
+        brief_cols = {
             row[1]
             for row in conn.execute("PRAGMA table_info(briefs)").fetchall()
         }
-        if "draft" not in existing_cols:
+        if "draft" not in brief_cols:
             conn.execute("ALTER TABLE briefs ADD COLUMN draft TEXT")
 
         # Migrate: add `file_type` column to copy_files for existing databases.
@@ -137,14 +137,19 @@ def init_portal_db():
             )
 
         # Migrate: add `must_reset_password` column for new welcome-email flow.
-        if "must_reset_password" not in existing_cols:
+        user_cols = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(portal_users)").fetchall()
+        }
+        if "must_reset_password" not in user_cols:
             conn.execute(
                 "ALTER TABLE portal_users "
                 "ADD COLUMN must_reset_password INTEGER NOT NULL DEFAULT 0"
             )
 
+        # Seed default admin account if none exists.
         admin = conn.execute(
-            "SELECT id FROM portal_users WHERE role='admin' LIMIT 1"
+            "SELECT id FROM portal_users WHERE role = 'admin' LIMIT 1"
         ).fetchone()
 
         if not admin:
