@@ -334,6 +334,20 @@ def scraper_run():
         flash("APIFY_API_TOKEN is not configured. Add it to your .env file.", "danger")
         return redirect(url_for("portal_admin.scraper"))
 
+    # Quick pre-flight: verify the token reaches Apify before spawning a thread.
+    try:
+        from apify_client import ApifyClient as _AC
+        user_info = _AC(token).user("me").get()
+        if not user_info:
+            raise ValueError("Token rejected — Apify returned no user data.")
+    except Exception as _e:
+        flash(
+            f"Apify token validation failed: {_e}. "
+            "Check that APIFY_API_TOKEN in your .env is correct and not expired.",
+            "danger",
+        )
+        return redirect(url_for("portal_admin.scraper"))
+
     raw_tags = request.form.get("hashtags", "").strip()
     hashtags = [t.strip().lstrip("#") for t in raw_tags.replace(",", "\n").splitlines() if t.strip()]
     if not hashtags:

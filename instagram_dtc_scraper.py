@@ -92,6 +92,16 @@ def safe_int(value) -> int:
         return 0
 
 
+_CSV_INJECT_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+def _sanitize_csv(value: str) -> str:
+    """Prevent CSV formula injection (Excel/Sheets) by escaping dangerous leading chars."""
+    s = str(value).strip()
+    if s and s[0] in _CSV_INJECT_PREFIXES:
+        return "'" + s
+    return s
+
+
 def _actor_call(client: ApifyClient, run_input: dict, context: str) -> dict:
     run = client.actor(ACTOR_ID).call(run_input=run_input)
     if run is None:
@@ -161,12 +171,12 @@ def extract_profile(item: dict, source_hashtag: str) -> dict | None:
     raw_followers = item.get("followersCount")
     follower_count = safe_int(raw_followers) if raw_followers is not None else 0
 
-    full_name = (item.get("fullName") or "").strip()
-    bio = (item.get("biography") or "").replace("\n", " ").strip()
+    full_name = _sanitize_csv((item.get("fullName") or "").strip())
+    bio = _sanitize_csv((item.get("biography") or "").replace("\n", " ").strip())
     profile_url = f"https://www.instagram.com/{username}/"
 
     return {
-        "username": username,
+        "username": _sanitize_csv(username),
         "full_name": full_name,
         "follower_count": follower_count,
         "bio": bio,

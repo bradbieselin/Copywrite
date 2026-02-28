@@ -11,11 +11,14 @@ Copywrite — Flask web app suite
 
 import os
 from flask import Flask
+from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 from db import init_db, init_portal_db
+
+_csrf = CSRFProtect()
 
 
 def create_app() -> Flask:
@@ -37,6 +40,13 @@ def create_app() -> Flask:
     app.config["ADMIN_EMAIL"]         = os.environ.get("ADMIN_EMAIL", "")
     # Base URL used to build deep-links in emails, e.g. https://yourapp.com
     app.config["APP_BASE_URL"]        = os.environ.get("APP_BASE_URL", "http://localhost:5000")
+
+    # Security: harden session cookies
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+    # CSRF protection for all state-changing forms
+    _csrf.init_app(app)
 
     # Landing page
     from landing import landing_bp

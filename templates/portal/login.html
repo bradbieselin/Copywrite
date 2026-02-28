@@ -27,6 +27,7 @@
       {% endif %}
 
       <form method="POST" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
 
         <div class="mb-3">

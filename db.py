@@ -1,6 +1,7 @@
 """SQLite helpers for Copywrite."""
 
 import os
+import secrets
 import sqlite3
 
 from werkzeug.security import generate_password_hash
@@ -140,15 +141,16 @@ def init_portal_db():
         ).fetchone()
 
         if not admin:
+            _tmp_pw = secrets.token_urlsafe(12)
             conn.execute(
                 "INSERT INTO portal_users (name, email, password_hash, role) VALUES (?,?,?,?)",
                 ("Admin", "admin@copywrite.io",
-                 generate_password_hash("admin123"), "admin"),
+                 generate_password_hash(_tmp_pw), "admin"),
             )
             print(
                 "\n[Portal] Default admin created — "
-                "email: admin@copywrite.io  password: admin123\n"
-                "Change this password after first login.\n"
+                f"email: admin@copywrite.io  password: {_tmp_pw}\n"
+                "IMPORTANT: Change this password immediately after first login.\n"
             )
 
 

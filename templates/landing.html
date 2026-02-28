@@ -1145,6 +1145,7 @@
           {% endwith %}
 
           <form method="POST" action="{{ url_for('landing.contact') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <!-- Honeypot: bots fill this, humans don't -->
             <div class="hp-field" aria-hidden="true">
               <label for="url">Website</label>

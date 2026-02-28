@@ -37,12 +37,14 @@
         <div class="d-flex flex-wrap gap-2 mb-4">
           {% if brief.status == 'pending' %}
             <form method="POST">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="action" value="mark_in_progress">
               <button class="btn btn-outline-primary btn-sm">Mark In Progress</button>
             </form>
           {% endif %}
           {% if brief.status != 'completed' %}
             <form method="POST">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <input type="hidden" name="action" value="mark_complete">
               <button class="btn btn-outline-success btn-sm">Mark Complete</button>
             </form>
@@ -58,6 +60,7 @@
         <!-- upload copy -->
         <h6 class="fw-bold text-uppercase text-muted small mb-2">Upload Completed Copy</h6>
         <form method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <input type="hidden" name="action" value="upload_copy">
           <div class="input-group">
             <input type="file" class="form-control form-control-sm"
@@ -121,6 +124,7 @@
           </p>
         {% else %}
           <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="action" value="save_draft">
             <textarea
               name="draft"
