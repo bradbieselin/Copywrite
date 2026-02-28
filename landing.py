@@ -24,6 +24,11 @@ def about():
 
 @landing_bp.route("/contact", methods=["POST"])
 def contact():
+    # Honeypot: bots fill the hidden "url" field, humans never see it
+    if request.form.get("url", "").strip():
+        # Silent success — don't tip off the bot
+        return redirect(url_for("landing.index") + "?sent=1#contact")
+
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip()
     message = request.form.get("message", "").strip()

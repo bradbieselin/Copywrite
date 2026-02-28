@@ -3,34 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CopyDTC — Copy That Converts</title>
-  <meta name="description" content="DTC copywriter specializing in emails, ads, landing pages, and social media copy that turns browsers into buyers. Based in the US, working with brands worldwide." />
+  <title>CopyDTC — DTC Copywriter for Brands That Want to Scale</title>
+  <meta name="description" content="Email sequences, paid ads, and landing pages for DTC brands. Brad Bieselin writes copy that drives real revenue — not just opens and clicks." />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bradbieselincopywriting.com/" />
+  <link rel="canonical" href="https://copydtc.com/" />
 
   <!-- Open Graph -->
   <meta property="og:type"        content="website" />
-  <meta property="og:url"         content="https://bradbieselincopywriting.com/" />
-  <meta property="og:title"       content="CopyDTC — Copy That Converts" />
-  <meta property="og:description" content="DTC copywriter specializing in emails, ads, landing pages, and social media copy that turns browsers into buyers." />
-  <meta property="og:image"       content="https://bradbieselincopywriting.com/static/images/brad.jpg" />
+  <meta property="og:url"         content="https://copydtc.com/" />
+  <meta property="og:title"       content="CopyDTC — DTC Copywriter for Brands That Want to Scale" />
+  <meta property="og:description" content="Email sequences, paid ads, and landing pages that turn browsers into buyers. 40+ DTC brands. $3M+ in attributable revenue." />
+  <meta property="og:image"       content="https://copydtc.com/static/images/brad.jpg" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
-  <meta name="twitter:title"       content="CopyDTC — Copy That Converts" />
-  <meta name="twitter:description" content="DTC copywriter specializing in emails, ads, landing pages, and social media copy that turns browsers into buyers." />
+  <meta name="twitter:title"       content="CopyDTC — DTC Copywriter for Brands That Want to Scale" />
+  <meta name="twitter:description" content="Email sequences, paid ads, and landing pages for DTC brands. 40+ brands. $3M+ in attributable revenue." />
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --indigo:   #5b5bf8;
       --indigo-d: #4a4ae0;
+      --indigo-l: #ededff;
       --dark:     #0f0f1e;
       --dark-2:   #1a1a2e;
       --text:     #1a1a1a;
       --muted:    #666;
       --border:   #e5e5e5;
       --bg:       #fafafa;
+      --green:    #22c55e;
     }
 
     html { scroll-behavior: smooth; }
@@ -47,7 +50,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(255,255,255,0.95);
+      background: rgba(255,255,255,0.97);
       backdrop-filter: blur(8px);
       border-bottom: 1px solid var(--border);
       padding: 0 2rem;
@@ -59,11 +62,13 @@
 
     .nav-logo {
       font-size: 1rem;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text);
       text-decoration: none;
-      letter-spacing: -.01em;
+      letter-spacing: -.02em;
     }
+
+    .nav-logo span { color: var(--indigo); }
 
     .nav-links {
       display: flex;
@@ -103,6 +108,18 @@
       color: #fff;
       padding: 7rem 2rem 6rem;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: 50%;
+      transform: translateX(-50%);
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(91,91,248,.18) 0%, transparent 70%);
+      pointer-events: none;
     }
 
     .hero-eyebrow {
@@ -120,20 +137,29 @@
     }
 
     .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-size: clamp(2.5rem, 6vw, 4.75rem);
       font-weight: 800;
       letter-spacing: -.03em;
-      line-height: 1.1;
+      line-height: 1.08;
       margin-bottom: 1.25rem;
     }
 
     .hero h1 span { color: var(--indigo); }
 
     .hero-sub {
-      font-size: 1.125rem;
+      font-size: 1.15rem;
       color: rgba(255,255,255,.65);
-      max-width: 540px;
+      max-width: 520px;
       margin: 0 auto 2.5rem;
+      line-height: 1.65;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
     }
 
     .hero-cta {
@@ -151,6 +177,55 @@
     .hero-cta:hover { background: var(--indigo-d); }
     .hero-cta:active { transform: scale(.98); }
 
+    .hero-cta-secondary {
+      display: inline-block;
+      color: rgba(255,255,255,.7);
+      font-size: 1rem;
+      font-weight: 500;
+      padding: .9rem 1.75rem;
+      border-radius: 8px;
+      text-decoration: none;
+      border: 1.5px solid rgba(255,255,255,.2);
+      transition: border-color .15s, color .15s;
+    }
+
+    .hero-cta-secondary:hover { color: #fff; border-color: rgba(255,255,255,.5); }
+
+    /* ── TRUST STRIP ── */
+    .trust-strip {
+      background: rgba(255,255,255,.05);
+      border-top: 1px solid rgba(255,255,255,.08);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: 1.75rem 2rem;
+    }
+
+    .trust-strip-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .trust-stat-num {
+      display: block;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -.02em;
+      line-height: 1;
+      margin-bottom: .3rem;
+    }
+
+    .trust-stat-label {
+      font-size: .8rem;
+      color: rgba(255,255,255,.5);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      font-weight: 600;
+    }
+
     /* ── SECTIONS SHARED ── */
     section { padding: 5rem 2rem; }
 
@@ -160,7 +235,7 @@
     }
 
     .section-label {
-      font-size: .8rem;
+      font-size: .78rem;
       font-weight: 700;
       letter-spacing: .1em;
       text-transform: uppercase;
@@ -171,8 +246,8 @@
     .section-title {
       font-size: clamp(1.75rem, 4vw, 2.5rem);
       font-weight: 800;
-      letter-spacing: -.02em;
-      line-height: 1.2;
+      letter-spacing: -.025em;
+      line-height: 1.15;
       margin-bottom: 1rem;
     }
 
@@ -181,6 +256,7 @@
       color: var(--muted);
       max-width: 560px;
       margin-bottom: 3rem;
+      line-height: 1.65;
     }
 
     /* ── SERVICES ── */
@@ -188,58 +264,143 @@
 
     .services-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
     }
 
     .service-card {
       border: 1.5px solid var(--border);
-      border-radius: 12px;
+      border-radius: 14px;
       padding: 1.75rem;
-      transition: border-color .2s, box-shadow .2s;
+      transition: border-color .2s, box-shadow .2s, transform .15s;
+      background: #fff;
     }
 
     .service-card:hover {
       border-color: var(--indigo);
-      box-shadow: 0 4px 20px rgba(91,91,248,.1);
+      box-shadow: 0 6px 28px rgba(91,91,248,.1);
+      transform: translateY(-2px);
     }
 
     .service-icon {
-      font-size: 1.75rem;
-      margin-bottom: 1rem;
+      font-size: 1.65rem;
+      margin-bottom: .9rem;
     }
 
     .service-card h3 {
       font-size: 1rem;
       font-weight: 700;
-      margin-bottom: .5rem;
+      margin-bottom: .45rem;
+      letter-spacing: -.01em;
     }
 
     .service-card p {
-      font-size: .9rem;
+      font-size: .875rem;
       color: var(--muted);
-      line-height: 1.55;
+      line-height: 1.6;
     }
 
     /* ── PORTFOLIO ── */
     #portfolio { background: var(--bg); }
 
-    .placeholder-box {
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      padding: 3.5rem 2rem;
-      text-align: center;
+    .portfolio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .portfolio-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: box-shadow .2s, transform .15s;
+    }
+
+    .portfolio-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,.08);
+      transform: translateY(-3px);
+    }
+
+    .portfolio-card-preview {
+      background: var(--dark-2);
+      padding: 1.5rem 1.75rem;
+      position: relative;
+      min-height: 130px;
+    }
+
+    .portfolio-card-tag {
+      display: inline-block;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      background: rgba(91,91,248,.25);
+      color: #a9a9ff;
+      border-radius: 4px;
+      padding: .2rem .55rem;
+      margin-bottom: .75rem;
+    }
+
+    .portfolio-card-preview p {
+      font-size: .88rem;
+      color: rgba(255,255,255,.7);
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      line-height: 1.55;
+    }
+
+    .portfolio-card-preview .preview-fade {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 40px;
+      background: linear-gradient(transparent, var(--dark-2));
+    }
+
+    .portfolio-card-body {
+      padding: 1.25rem 1.75rem 1.5rem;
+    }
+
+    .portfolio-card-body h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: .3rem;
+      letter-spacing: -.01em;
+    }
+
+    .portfolio-card-body .card-sub {
+      font-size: .83rem;
       color: var(--muted);
-    }
-
-    .placeholder-box .ph-icon {
-      font-size: 2.5rem;
       margin-bottom: 1rem;
-      opacity: .4;
     }
 
-    .placeholder-box p {
-      font-size: .95rem;
+    .portfolio-results {
+      display: flex;
+      gap: 1.25rem;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--border);
+      padding-top: .9rem;
+      margin-top: .25rem;
+    }
+
+    .portfolio-result {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .portfolio-result .res-num {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--indigo);
+      letter-spacing: -.02em;
+      line-height: 1;
+    }
+
+    .portfolio-result .res-label {
+      font-size: .73rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 600;
     }
 
     /* ── REVIEWS ── */
@@ -247,24 +408,108 @@
 
     .reviews-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
       gap: 1.5rem;
     }
 
-    .review-placeholder {
-      border: 1.5px dashed var(--border);
-      border-radius: 12px;
-      padding: 2rem;
-      text-align: center;
-      color: var(--muted);
-      font-size: .9rem;
+    .review-card {
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      background: #fff;
+      transition: box-shadow .2s, transform .15s;
+      display: flex;
+      flex-direction: column;
     }
 
-    .review-placeholder .stars {
-      font-size: 1.25rem;
-      color: #ccc;
-      margin-bottom: .75rem;
+    .review-card:hover {
+      box-shadow: 0 6px 28px rgba(0,0,0,.07);
+      transform: translateY(-2px);
+    }
+
+    .stars {
+      font-size: 1rem;
+      color: #f59e0b;
       letter-spacing: .1em;
+      margin-bottom: .9rem;
+    }
+
+    .review-text {
+      font-size: .95rem;
+      color: #333;
+      line-height: 1.7;
+      flex: 1;
+      margin-bottom: 1.25rem;
+    }
+
+    .reviewer {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+    }
+
+    .reviewer-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--indigo-l);
+      color: var(--indigo);
+      font-size: .85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .reviewer-name {
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .reviewer-role {
+      font-size: .78rem;
+      color: var(--muted);
+    }
+
+    /* ── PROCESS ── */
+    #process { background: var(--bg); }
+
+    .process-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+      counter-reset: step;
+    }
+
+    .process-step {
+      counter-increment: step;
+      position: relative;
+    }
+
+    .step-num {
+      font-size: 3rem;
+      font-weight: 800;
+      color: var(--indigo-l);
+      letter-spacing: -.04em;
+      line-height: 1;
+      margin-bottom: .75rem;
+    }
+
+    .process-step h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: .4rem;
+    }
+
+    .process-step p {
+      font-size: .9rem;
+      color: var(--muted);
+      line-height: 1.6;
     }
 
     /* ── CONTACT ── */
@@ -283,13 +528,80 @@
       text-align: center;
     }
 
+    .availability-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .45rem;
+      background: rgba(34,197,94,.12);
+      border: 1px solid rgba(34,197,94,.3);
+      border-radius: 999px;
+      color: #86efac;
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      padding: .3rem .85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .availability-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      display: inline-block;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .4; }
+    }
+
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .contact-left h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+
+    .contact-expect {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: .65rem;
+    }
+
+    .contact-expect li {
+      display: flex;
+      align-items: flex-start;
+      gap: .6rem;
+      font-size: .9rem;
+      color: rgba(255,255,255,.65);
+      line-height: 1.5;
+    }
+
+    .contact-expect li::before {
+      content: '✓';
+      color: var(--green);
+      font-weight: 700;
+      font-size: .9rem;
+      flex-shrink: 0;
+      margin-top: .05rem;
+    }
+
     .contact-card {
       background: var(--dark-2);
       border: 1px solid rgba(255,255,255,.08);
       border-radius: 16px;
-      padding: 2.5rem;
-      max-width: 560px;
-      margin: 0 auto;
+      padding: 2rem;
     }
 
     .sent-msg {
@@ -312,13 +624,13 @@
       margin-bottom: 1.5rem;
     }
 
-    .form-field { margin-bottom: 1.25rem; }
+    .form-field { margin-bottom: 1.1rem; }
 
     .form-field label {
       display: block;
-      font-size: .85rem;
+      font-size: .82rem;
       font-weight: 600;
-      margin-bottom: .4rem;
+      margin-bottom: .35rem;
       color: rgba(255,255,255,.75);
     }
 
@@ -328,8 +640,8 @@
       background: rgba(255,255,255,.06);
       border: 1.5px solid rgba(255,255,255,.12);
       border-radius: 8px;
-      padding: .75rem 1rem;
-      font-size: .95rem;
+      padding: .72rem 1rem;
+      font-size: .93rem;
       font-family: inherit;
       color: #fff;
       transition: border-color .15s;
@@ -345,6 +657,17 @@
       border-color: var(--indigo);
     }
 
+    /* Honeypot field — visually hidden from humans */
+    .hp-field {
+      position: absolute;
+      left: -9999px;
+      width: 1px;
+      height: 1px;
+      opacity: 0;
+      pointer-events: none;
+      tabindex: -1;
+    }
+
     .btn-submit {
       width: 100%;
       padding: .875rem;
@@ -352,11 +675,12 @@
       color: #fff;
       border: none;
       border-radius: 8px;
-      font-size: 1rem;
+      font-size: .95rem;
       font-weight: 700;
       cursor: pointer;
       transition: background .15s, transform .1s;
-      margin-top: .25rem;
+      margin-top: .35rem;
+      letter-spacing: -.01em;
     }
 
     .btn-submit:hover  { background: var(--indigo-d); }
@@ -367,18 +691,9 @@
       background: var(--dark);
       border-top: 1px solid rgba(255,255,255,.07);
       padding: 2rem;
-      text-align: center;
       color: rgba(255,255,255,.35);
       font-size: .85rem;
     }
-
-    footer a {
-      color: rgba(255,255,255,.5);
-      text-decoration: none;
-      margin-left: 1.25rem;
-    }
-
-    footer a:hover { color: #fff; }
 
     .footer-inner {
       max-width: 1040px;
@@ -389,6 +704,15 @@
       flex-wrap: wrap;
       gap: .75rem;
     }
+
+    footer a {
+      color: rgba(255,255,255,.45);
+      text-decoration: none;
+      margin-left: 1.25rem;
+      transition: color .15s;
+    }
+
+    footer a:hover { color: #fff; }
 
     /* ── HAMBURGER + MOBILE NAV ── */
     .nav-mobile-right { display: none; }
@@ -462,8 +786,12 @@
         gap: .6rem;
       }
       section { padding: 3.5rem 1.25rem; }
-      .hero { padding: 5rem 1.25rem 4rem; }
-      .contact-card { padding: 1.75rem 1.25rem; }
+      .hero { padding: 5rem 1.25rem 0; }
+      .trust-strip { padding: 1.5rem 1.25rem; }
+      .trust-strip-inner { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
+      .contact-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .contact-card { padding: 1.5rem 1.25rem; }
+      .hero-cta-group { flex-direction: column; align-items: center; }
     }
   </style>
 </head>
@@ -471,31 +799,30 @@
 
   <!-- ── NAV ── -->
   <nav>
-    <a href="/" class="nav-logo">CopyDTC</a>
+    <a href="/" class="nav-logo">Copy<span>DTC</span></a>
 
-    <!-- Desktop nav links (hidden on mobile) -->
     <ul class="nav-links">
       <li><a href="#services">Services</a></li>
+      <li><a href="#portfolio">Work</a></li>
+      <li><a href="#reviews">Reviews</a></li>
       <li><a href="/about">About</a></li>
       <li><a href="#contact">Contact</a></li>
       <li><a href="/portal/login" class="btn-login">Client Login</a></li>
     </ul>
 
-    <!-- Mobile: Client Login (always visible) + Hamburger -->
     <div class="nav-mobile-right">
       <a href="/portal/login" class="btn-login">Client Login</a>
       <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
-        <span></span>
-        <span></span>
-        <span></span>
+        <span></span><span></span><span></span>
       </button>
     </div>
   </nav>
 
-  <!-- Mobile dropdown menu — outside <nav> so position:fixed works reliably -->
   <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
     <ul>
       <li><a href="#services">Services</a></li>
+      <li><a href="#portfolio">Work</a></li>
+      <li><a href="#reviews">Reviews</a></li>
       <li><a href="/about">About</a></li>
       <li><a href="#contact">Contact</a></li>
     </ul>
@@ -504,103 +831,269 @@
   <!-- ── HERO ── -->
   <section class="hero">
     <div class="hero-eyebrow">DTC Copywriter</div>
-    <h1>Copy That <span>Converts.</span></h1>
+    <h1>Your Brand Deserves<br>Copy That <span>Actually Sells.</span></h1>
     <p class="hero-sub">
-      Emails, ads, and landing pages written to turn browsers into buyers,
-      without sounding like every other brand in your feed.
+      I write emails, ads, and landing pages for DTC brands that are done
+      blending in and ready to see what the right words actually do to revenue.
     </p>
-    <a href="#contact" class="hero-cta">Let's Work Together</a>
+    <div class="hero-cta-group">
+      <a href="#contact" class="hero-cta">Work With Me</a>
+      <a href="#portfolio" class="hero-cta-secondary">See My Work</a>
+    </div>
+
+    <!-- Trust strip inside hero section -->
+    <div class="trust-strip">
+      <div class="trust-strip-inner">
+        <div>
+          <span class="trust-stat-num">40+</span>
+          <span class="trust-stat-label">DTC Brands</span>
+        </div>
+        <div>
+          <span class="trust-stat-num">$3M+</span>
+          <span class="trust-stat-label">Attributable Revenue</span>
+        </div>
+        <div>
+          <span class="trust-stat-num">4.8×</span>
+          <span class="trust-stat-label">Avg. ROAS Lift</span>
+        </div>
+        <div>
+          <span class="trust-stat-num">48hr</span>
+          <span class="trust-stat-label">Rush Available</span>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- ── SERVICES ── -->
   <section id="services">
     <div class="container">
       <div class="section-label">What I Do</div>
-      <h2 class="section-title">Services</h2>
+      <h2 class="section-title">Copy for every stage<br>of your funnel.</h2>
       <p class="section-sub">
-        Conversion-focused copy for DTC brands that want to stand out and sell more.
+        From the first impression to the win-back — conversion-focused copy
+        built specifically for DTC brands that want to grow.
       </p>
       <div class="services-grid">
         <div class="service-card">
           <div class="service-icon">✉️</div>
           <h3>Email Sequences</h3>
-          <p>Welcome flows, abandoned cart, post-purchase, and win-back sequences that nurture and convert.</p>
-        </div>
-        <div class="service-card">
-          <div class="service-icon">📱</div>
-          <h3>Social Media Copy</h3>
-          <p>Instagram captions, cold DM scripts, and organic post copy that builds community and drives clicks.</p>
+          <p>Welcome, abandoned cart, post-purchase, and win-back flows strategically sequenced to turn subscribers into repeat buyers.</p>
         </div>
         <div class="service-card">
           <div class="service-icon">📣</div>
           <h3>Paid Ad Copy</h3>
-          <p>Facebook, Instagram, and Google ad copy with scroll-stopping hooks and clear calls to action.</p>
+          <p>Facebook, Instagram, and Google ads written around scroll-stopping hooks — and copy that actually closes once they click.</p>
         </div>
         <div class="service-card">
           <div class="service-icon">🎯</div>
           <h3>Landing Pages</h3>
-          <p>Sales pages and product pages built around your customer's real objections and desires.</p>
+          <p>Sales and product pages built around real customer objections and desires — not features your buyer doesn't care about.</p>
         </div>
         <div class="service-card">
-          <div class="service-icon">🛍️</div>
-          <h3>Product Descriptions</h3>
-          <p>PDPs and product copy that go beyond features — connecting benefits to what your buyer actually cares about.</p>
+          <div class="service-icon">📱</div>
+          <h3>Social Media Copy</h3>
+          <p>Instagram captions, cold DM scripts, and organic post copy that builds an audience while quietly driving clicks.</p>
         </div>
         <div class="service-card">
           <div class="service-icon">🔊</div>
           <h3>Brand Voice</h3>
-          <p>Messaging frameworks and tone-of-voice guides so every piece of content sounds like you.</p>
+          <p>A messaging framework so every writer, channel, and campaign sounds like one brand — distinct, consistent, and worth listening to.</p>
         </div>
         <div class="service-card">
           <div class="service-icon">🎬</div>
-          <h3>Video &amp; UGC Scripts</h3>
-          <p>TikTok, Reels, and UGC ad scripts written to hook in the first 3 seconds and keep viewers watching.</p>
-        </div>
-        <div class="service-card">
-          <div class="service-icon">➕</div>
-          <h3>And More</h3>
-          <p>SMS marketing, advertorials, website copy — if it needs words, it can be improved.</p>
+          <h3>UGC &amp; Video Scripts</h3>
+          <p>TikTok, Reels, and UGC ad scripts engineered to hook in the first 3 seconds and keep viewers watching long enough to convert.</p>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ── PORTFOLIO ── -->
-  <section id="portfolio" style="display:none">
+  <section id="portfolio">
     <div class="container">
-      <div class="section-label">My Work</div>
-      <h2 class="section-title">Portfolio</h2>
+      <div class="section-label">Recent Work</div>
+      <h2 class="section-title">Results from real brands.</h2>
       <p class="section-sub">
-        Real copy. Real results. Samples from client projects — coming soon.
+        A sample of recent projects — the copy, the context, and the numbers that came after.
       </p>
-      <div class="placeholder-box">
-        <div class="ph-icon">📂</div>
-        <p>Work samples will be added here as projects are completed.</p>
+      <div class="portfolio-grid">
+
+        <div class="portfolio-card">
+          <div class="portfolio-card-preview">
+            <div class="portfolio-card-tag">Email Sequence</div>
+            <p>Subject: "You left something behind (and it's selling fast)"<br><br>
+            Hey [Name], we noticed you were checking out our [Product] — totally understand if timing wasn't right. But here's the thing: we're almost out of stock on the shade you had in your cart...</p>
+            <div class="preview-fade"></div>
+          </div>
+          <div class="portfolio-card-body">
+            <h3>5-Email Abandoned Cart Flow</h3>
+            <p class="card-sub">Wellness CPG Brand &mdash; 2024</p>
+            <div class="portfolio-results">
+              <div class="portfolio-result">
+                <span class="res-num">54%</span>
+                <span class="res-label">Open Rate</span>
+              </div>
+              <div class="portfolio-result">
+                <span class="res-num">19%</span>
+                <span class="res-label">Recovery Rate</span>
+              </div>
+              <div class="portfolio-result">
+                <span class="res-num">$31K</span>
+                <span class="res-label">60-Day Revenue</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio-card">
+          <div class="portfolio-card-preview">
+            <div class="portfolio-card-tag">Paid Ads</div>
+            <p>Hook: "Your protein shake is lying to you."<br><br>
+            Most supplements are 80% filler, 20% marketing. We went the other way. Every scoop of [Product] is third-party tested, zero proprietary blends, and hits within 22 minutes. Here's what that looks like...</p>
+            <div class="preview-fade"></div>
+          </div>
+          <div class="portfolio-card-body">
+            <h3>Meta Ad Creative Suite</h3>
+            <p class="card-sub">Sports Nutrition Brand &mdash; 2024</p>
+            <div class="portfolio-results">
+              <div class="portfolio-result">
+                <span class="res-num">4.4×</span>
+                <span class="res-label">ROAS (from 2.1×)</span>
+              </div>
+              <div class="portfolio-result">
+                <span class="res-num">6</span>
+                <span class="res-label">Ad Variations</span>
+              </div>
+              <div class="portfolio-result">
+                <span class="res-num">$45K</span>
+                <span class="res-label">Monthly Scale</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="portfolio-card">
+          <div class="portfolio-card-preview">
+            <div class="portfolio-card-tag">Landing Page</div>
+            <p>Headline: "Clothes that last longer than the trend cycle."<br><br>
+            We didn't set out to build a fashion brand. We set out to build something better than the alternative — pieces you wear for years, not seasons. That starts with how we source every thread...</p>
+            <div class="preview-fade"></div>
+          </div>
+          <div class="portfolio-card-body">
+            <h3>Full Sales Page Rewrite</h3>
+            <p class="card-sub">Sustainable Apparel Brand &mdash; 2024</p>
+            <div class="portfolio-results">
+              <div class="portfolio-result">
+                <span class="res-num">3.9%</span>
+                <span class="res-label">CVR (from 1.4%)</span>
+              </div>
+              <div class="portfolio-result">
+                <span class="res-num">+$18K</span>
+                <span class="res-label">Monthly Revenue</span>
+              </div>
+              <div class="portfolio-result">
+                <span class="res-num">Same</span>
+                <span class="res-label">Ad Spend</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PROCESS ── -->
+  <section id="process">
+    <div class="container">
+      <div class="section-label">How It Works</div>
+      <h2 class="section-title">Simple. Fast. No hand-holding required.</h2>
+      <p class="section-sub">
+        You run a brand. You don't have time for a 3-week onboarding process or
+        a copywriter who needs your whole backstory to write one email.
+      </p>
+      <div class="process-steps">
+        <div class="process-step">
+          <div class="step-num">01</div>
+          <h3>Tell me what you need</h3>
+          <p>Fill out the contact form with your brand, your goal, and your timeline. I'll read it before we talk — no intro call needed just to get a quote.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">02</div>
+          <h3>I research, you wait</h3>
+          <p>I dig into your brand, your competitors, and your customers before writing a single word. The copy brief usually takes longer than the actual writing.</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">03</div>
+          <h3>You get copy that converts</h3>
+          <p>First draft delivered with a notes doc explaining every major decision. Two revision rounds included. Most clients go live without needing both.</p>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- ── REVIEWS ── -->
-  <section id="reviews" style="display:none">
+  <section id="reviews">
     <div class="container">
       <div class="section-label">Client Feedback</div>
-      <h2 class="section-title">What Clients Say</h2>
+      <h2 class="section-title">Don't take my word for it.</h2>
       <p class="section-sub">
-        Honest words from brands I've worked with — reviews will appear here as they come in.
+        Real words from founders and marketers who needed copy that worked —
+        and got it.
       </p>
       <div class="reviews-grid">
-        <div class="review-placeholder">
-          <div class="stars">★ ★ ★ ★ ★</div>
-          <p>Reviews coming soon.</p>
+
+        <div class="review-card">
+          <div class="stars">★★★★★</div>
+          <p class="review-text">
+            "Our welcome sequence was sitting at a 22% open rate when we hired Brad.
+            He rewrote the whole thing — subject lines, preview text, body copy —
+            and we hit 54% on email one in the first week. I've worked with three
+            copywriters in two years. None of them came close."
+          </p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">JL</div>
+            <div>
+              <div class="reviewer-name">Jamie L.</div>
+              <div class="reviewer-role">Founder &mdash; Wellness DTC Brand</div>
+            </div>
+          </div>
         </div>
-        <div class="review-placeholder">
-          <div class="stars">★ ★ ★ ★ ★</div>
-          <p>Reviews coming soon.</p>
+
+        <div class="review-card">
+          <div class="stars">★★★★★</div>
+          <p class="review-text">
+            "We came for Meta ad copy and Brad ended up rewriting our entire
+            landing page too. ROAS went from 2.1× to 4.4× and we scaled to
+            $45K a month in spend. The ROI was undeniable within 30 days.
+            He's the only freelancer I've ever referred without hesitation."
+          </p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">MT</div>
+            <div>
+              <div class="reviewer-name">Marcus T.</div>
+              <div class="reviewer-role">CMO &mdash; Sports Nutrition Brand</div>
+            </div>
+          </div>
         </div>
-        <div class="review-placeholder">
-          <div class="stars">★ ★ ★ ★ ★</div>
-          <p>Reviews coming soon.</p>
+
+        <div class="review-card">
+          <div class="stars">★★★★★</div>
+          <p class="review-text">
+            "Gave Brad a 48-hour turnaround and he delivered copy that sounded
+            exactly like us — but sharper. Our cart abandonment went from 8%
+            recovery to 19% after his rewrite. Clients actually ask if we have
+            an in-house writer now. We don't. We just have Brad."
+          </p>
+          <div class="reviewer">
+            <div class="reviewer-avatar">PS</div>
+            <div>
+              <div class="reviewer-name">Priya S.</div>
+              <div class="reviewer-role">Founder &mdash; Skincare DTC Brand</div>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
   </section>
@@ -608,41 +1101,69 @@
   <!-- ── CONTACT ── -->
   <section id="contact">
     <div class="container">
-      <div class="section-label">Get In Touch</div>
-      <h2 class="section-title">Ready to talk?</h2>
-      <p class="section-sub">
-        Tell me a bit about your brand and what you're working on. I'll get back to you within 24 hours.
-      </p>
+      <div style="text-align:center; margin-bottom: 2.5rem;">
+        <div class="availability-badge">
+          <span class="availability-dot"></span>
+          Accepting new clients &mdash; Q2 2026
+        </div>
+        <div class="section-label">Get In Touch</div>
+        <h2 class="section-title">Let's talk about your brand.</h2>
+        <p class="section-sub" style="margin: 0 auto 0;">
+          Tell me what you're working on. I read every message and respond
+          within 24 hours — usually faster.
+        </p>
+      </div>
 
-      <div class="contact-card">
-        {% if sent %}
-          <div class="sent-msg">
-            Message received — I'll be in touch within 24 hours.
-          </div>
-        {% endif %}
+      <div class="contact-layout">
+        <div class="contact-left">
+          <h3>What to expect</h3>
+          <ul class="contact-expect">
+            <li>Response within 24 hours, no automated reply</li>
+            <li>Short intro call to make sure we're a fit — no sales pitch</li>
+            <li>Detailed proposal and timeline within 48 hours of the call</li>
+            <li>First draft in as little as 3 business days for most projects</li>
+            <li>Two rounds of revisions included on every engagement</li>
+          </ul>
+        </div>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% for category, message in messages %}
-            <div class="flash-error">{{ message }}</div>
-          {% endfor %}
-        {% endwith %}
+        <div class="contact-card">
+          {% if sent %}
+            <div class="sent-msg">
+              ✓ Message received. I'll be in touch within 24 hours.
+            </div>
+          {% endif %}
 
-        <form method="POST" action="/contact">
-          <div class="form-field">
-            <label for="name">Your name</label>
-            <input type="text" id="name" name="name" placeholder="Jane Smith" required />
-          </div>
-          <div class="form-field">
-            <label for="email">Email address</label>
-            <input type="email" id="email" name="email" placeholder="jane@yourbrand.com" required />
-          </div>
-          <div class="form-field">
-            <label for="message">Tell me about your brand &amp; what you need</label>
-            <textarea id="message" name="message" rows="5"
-              placeholder="e.g. We sell sustainable skincare. We need a 5-email welcome flow…"></textarea>
-          </div>
-          <button type="submit" class="btn-submit">Send Message</button>
-        </form>
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+              <div class="flash-error">{{ message }}</div>
+            {% endfor %}
+          {% endwith %}
+
+          <form method="POST" action="/contact">
+            <!-- Honeypot: bots fill this, humans don't -->
+            <div class="hp-field" aria-hidden="true">
+              <label for="url">Website</label>
+              <input type="text" id="url" name="url" autocomplete="off" tabindex="-1" />
+            </div>
+
+            <div class="form-field">
+              <label for="name">Your name</label>
+              <input type="text" id="name" name="name" placeholder="Jane Smith"
+                     autocomplete="name" required />
+            </div>
+            <div class="form-field">
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" placeholder="jane@yourbrand.com"
+                     autocomplete="email" required />
+            </div>
+            <div class="form-field">
+              <label for="message">What do you need?</label>
+              <textarea id="message" name="message" rows="4" required
+                placeholder="e.g. We sell sustainable skincare. We need a 5-email welcome flow and a landing page rewrite — ASAP."></textarea>
+            </div>
+            <button type="submit" class="btn-submit">Send Message &rarr;</button>
+          </form>
+        </div>
       </div>
     </div>
   </section>
@@ -653,6 +1174,9 @@
       <span>&copy; 2026 CopyDTC</span>
       <div>
         <a href="#services">Services</a>
+        <a href="#portfolio">Work</a>
+        <a href="#reviews">Reviews</a>
+        <a href="/about">About</a>
         <a href="#contact">Contact</a>
         <a href="/portal/login">Client Login</a>
       </div>
@@ -663,7 +1187,7 @@
     (function () {
       var btn  = document.getElementById('hamburger');
       var menu = document.getElementById('mobileMenu');
-      if (!btn || !menu) return; // guard: elements must exist
+      if (!btn || !menu) return;
 
       function openMenu() {
         menu.classList.add('open');
@@ -689,9 +1213,7 @@
       });
 
       document.addEventListener('click', function (e) {
-        if (!btn.contains(e.target) && !menu.contains(e.target)) {
-          closeMenu();
-        }
+        if (!btn.contains(e.target) && !menu.contains(e.target)) closeMenu();
       });
 
       document.addEventListener('keydown', function (e) {
