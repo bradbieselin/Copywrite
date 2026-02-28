@@ -261,7 +261,9 @@
     }
 
     /* ── SERVICES ── */
-    #services { background: var(--bg-tint); }
+    #services { background: var(--dark); }
+    #services .section-title { color: #fff; }
+    #services .section-sub   { color: rgba(255,255,255,.72); }
 
     .services-grid {
       display: grid;
@@ -270,16 +272,16 @@
     }
 
     .service-card {
-      border: 1.5px solid var(--border);
+      border: 1.5px solid rgba(255,255,255,.1);
       border-radius: 14px;
       padding: 1.75rem;
       transition: border-color .2s, box-shadow .2s, transform .15s;
-      background: var(--bg);
+      background: var(--dark-2);
     }
 
     .service-card:hover {
       border-color: var(--indigo);
-      box-shadow: 0 6px 28px rgba(91,91,248,.1);
+      box-shadow: 0 6px 28px rgba(91,91,248,.2);
       transform: translateY(-2px);
     }
 
@@ -293,11 +295,12 @@
       font-weight: 700;
       margin-bottom: .45rem;
       letter-spacing: -.01em;
+      color: #fff;
     }
 
     .service-card p {
       font-size: .875rem;
-      color: var(--muted);
+      color: rgba(255,255,255,.62);
       line-height: 1.6;
     }
 
@@ -405,7 +408,9 @@
     }
 
     /* ── REVIEWS ── */
-    #reviews { background: var(--bg-tint); }
+    #reviews { background: var(--dark); }
+    #reviews .section-title { color: #fff; }
+    #reviews .section-sub   { color: rgba(255,255,255,.72); }
 
     .reviews-grid {
       display: grid;
@@ -414,17 +419,17 @@
     }
 
     .review-card {
-      border: 1.5px solid var(--border);
+      border: 1.5px solid rgba(255,255,255,.1);
       border-radius: 16px;
       padding: 1.75rem;
-      background: var(--bg);
+      background: var(--dark-2);
       transition: box-shadow .2s, transform .15s;
       display: flex;
       flex-direction: column;
     }
 
     .review-card:hover {
-      box-shadow: 0 6px 28px rgba(0,0,0,.07);
+      box-shadow: 0 6px 28px rgba(91,91,248,.15);
       transform: translateY(-2px);
     }
 
@@ -437,7 +442,7 @@
 
     .review-text {
       font-size: .95rem;
-      color: #333;
+      color: rgba(255,255,255,.82);
       line-height: 1.7;
       flex: 1;
       margin-bottom: 1.25rem;
@@ -447,7 +452,7 @@
       display: flex;
       align-items: center;
       gap: .75rem;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid rgba(255,255,255,.1);
       padding-top: 1rem;
     }
 
@@ -455,8 +460,8 @@
       width: 38px;
       height: 38px;
       border-radius: 50%;
-      background: var(--indigo-l);
-      color: var(--indigo);
+      background: rgba(91,91,248,.3);
+      color: #a9a9ff;
       font-size: .85rem;
       font-weight: 700;
       display: flex;
@@ -468,13 +473,13 @@
     .reviewer-name {
       font-size: .88rem;
       font-weight: 700;
-      color: var(--text);
+      color: #fff;
       line-height: 1.2;
     }
 
     .reviewer-role {
       font-size: .78rem;
-      color: var(--muted);
+      color: rgba(255,255,255,.52);
     }
 
     /* ── PROCESS ── */
