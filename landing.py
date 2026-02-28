@@ -25,6 +25,11 @@ def about():
     return render_template("about.html", photo_exists=photo_exists)
 
 
+@landing_bp.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+
 @landing_bp.route("/contact", methods=["POST"])
 def contact():
     # Honeypot: bots fill the hidden "url" field, humans never see it

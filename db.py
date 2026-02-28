@@ -148,15 +148,17 @@ def init_portal_db():
         ).fetchone()
 
         if not admin:
+            import os as _os
+            _admin_email = _os.environ.get("ADMIN_EMAIL", "admin@copydtc.com")
             _tmp_pw = secrets.token_urlsafe(12)
             conn.execute(
                 "INSERT INTO portal_users (name, email, password_hash, role) VALUES (?,?,?,?)",
-                ("Admin", "admin@copywrite.io",
+                ("Admin", _admin_email,
                  generate_password_hash(_tmp_pw), "admin"),
             )
             print(
                 "\n[Portal] Default admin created — "
-                f"email: admin@copywrite.io  password: {_tmp_pw}\n"
+                f"email: {_admin_email}  password: {_tmp_pw}\n"
                 "IMPORTANT: Change this password immediately after first login.\n"
             )
 

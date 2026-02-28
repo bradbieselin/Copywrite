@@ -44,6 +44,7 @@ def create_app() -> Flask:
     # Security: harden session cookies
     app.config["SESSION_COOKIE_HTTPONLY"] = True
     app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+    app.config["SESSION_COOKIE_SECURE"]   = not app.debug  # True in production (HTTPS)
 
     # CSRF protection for all state-changing forms
     _csrf.init_app(app)
