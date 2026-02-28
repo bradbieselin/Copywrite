@@ -180,9 +180,13 @@ def download_copy(brief_id):
         flash("No file has been uploaded yet.", "warning")
         return redirect(url_for("portal_client.brief_detail", brief_id=brief_id))
 
-    file_path = os.path.join(
-        current_app.config["UPLOAD_FOLDER"], copy_file["storage_filename"]
+    upload_dir = os.path.realpath(current_app.config["UPLOAD_FOLDER"])
+    file_path = os.path.realpath(
+        os.path.join(upload_dir, copy_file["storage_filename"])
     )
+    if not file_path.startswith(upload_dir + os.sep):
+        flash("Invalid file path.", "danger")
+        return redirect(url_for("portal_client.brief_detail", brief_id=brief_id))
     if not os.path.exists(file_path):
         flash("File not found on server. Please contact us.", "danger")
         return redirect(url_for("portal_client.brief_detail", brief_id=brief_id))

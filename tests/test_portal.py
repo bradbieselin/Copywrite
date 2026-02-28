@@ -36,6 +36,7 @@ def flask_app(tmp_path, monkeypatch):
     _app = app_module.create_app()
     _app.config.update(
         TESTING=True,
+        WTF_CSRF_ENABLED=False,
         SECRET_KEY="test-secret",
         UPLOAD_FOLDER=upload_dir,
     )
@@ -50,30 +51,34 @@ def client(flask_app):
 
 @pytest.fixture
 def admin_client(flask_app):
-    """Test client pre-authenticated as admin."""
+    """Test client pre-authenticated as admin via session injection."""
     with flask_app.test_client() as c:
-        c.post("/portal/login", data={
-            "email": "admin@copywrite.io",
-            "password": "admin123",
-        })
+        # Get the seeded admin's real ID from the DB
+        admin = db_module.get_user_by_email("admin@copydtc.com")
+        with c.session_transaction() as sess:
+            sess["user_id"] = admin["id"]
+            sess["user_name"] = admin["name"]
+            sess["user_role"] = "admin"
+            sess["user_email"] = admin["email"]
         yield c
 
 
 @pytest.fixture
 def portal_client_user(flask_app):
     """Create a client user and return their credentials."""
-    db_module.create_user("Alice Brand", "alice@brand.com", "password123", "client")
-    return {"email": "alice@brand.com", "password": "password123", "name": "Alice Brand"}
+    user_id = db_module.create_user("Alice Brand", "alice@brand.com", "password123", "client")
+    return {"id": user_id, "email": "alice@brand.com", "password": "password123", "name": "Alice Brand"}
 
 
 @pytest.fixture
 def auth_client(flask_app, portal_client_user):
     """Test client pre-authenticated as the 'Alice Brand' client user."""
     with flask_app.test_client() as c:
-        c.post("/portal/login", data={
-            "email": portal_client_user["email"],
-            "password": portal_client_user["password"],
-        })
+        with c.session_transaction() as sess:
+            sess["user_id"] = portal_client_user["id"]
+            sess["user_name"] = portal_client_user["name"]
+            sess["user_role"] = "client"
+            sess["user_email"] = portal_client_user["email"]
         yield c
 
 
@@ -134,10 +139,10 @@ class TestPortalDb:
         assert row is not None
 
     def test_seeds_admin_account(self):
-        user = db_module.get_user_by_email("admin@copywrite.io")
+        user = db_module.get_user_by_email("admin@copydtc.com")
         assert user is not None
         assert user["role"] == "admin"
-        assert check_password_hash(user["password_hash"], "admin123")
+        assert user["password_hash"]  # random password was hashed
 
     def test_init_portal_db_idempotent(self):
         db_module.init_portal_db()
@@ -151,12 +156,12 @@ class TestPortalDb:
     # ── users ─────────────────────────────────────────────────────────────────
 
     def test_get_user_by_email_returns_dict(self):
-        user = db_module.get_user_by_email("admin@copywrite.io")
+        user = db_module.get_user_by_email("admin@copydtc.com")
         assert isinstance(user, dict)
-        assert user["email"] == "admin@copywrite.io"
+        assert user["email"] == "admin@copydtc.com"
 
     def test_get_user_by_email_case_insensitive(self):
-        user = db_module.get_user_by_email("ADMIN@Copywrite.IO")
+        user = db_module.get_user_by_email("ADMIN@COPYDTC.COM")
         assert user is not None
 
     def test_get_user_by_email_unknown_returns_none(self):
@@ -187,7 +192,7 @@ class TestPortalDb:
         clients = db_module.get_all_clients()
         roles = {c["role"] for c in clients} if clients and "role" in clients[0] else set()
         emails = [c["email"] for c in clients]
-        assert "admin@copywrite.io" not in emails
+        assert "admin@copydtc.com" not in emails
         assert "frank@test.com" in emails
 
     # ── briefs ────────────────────────────────────────────────────────────────
@@ -276,7 +281,7 @@ class TestPortalDb:
 
     def _setup_brief(self):
         cid = self._client_id()
-        admin = db_module.get_user_by_email("admin@copywrite.io")
+        admin = db_module.get_user_by_email("admin@copydtc.com")
         bid = _make_brief(cid)
         return bid, admin["id"]
 
@@ -329,7 +334,7 @@ class TestAuth:
 
     def test_login_wrong_password_shows_error(self, client):
         r = client.post("/portal/login", data={
-            "email": "admin@copywrite.io", "password": "wrongpass"
+            "email": "admin@copydtc.com", "password": "wrongpass"
         })
         html = r.data.decode()
         assert "Invalid email or password" in html
@@ -340,9 +345,11 @@ class TestAuth:
         })
         assert "Invalid email or password" in r.data.decode()
 
-    def test_admin_login_redirects_to_admin_dashboard(self, client):
+    def test_admin_login_redirects_to_admin_dashboard(self, flask_app, client):
+        # Create an admin with known credentials for testing login flow
+        db_module.create_user("Test Admin", "testadmin@test.com", "admin123", "admin")
         r = client.post("/portal/login", data={
-            "email": "admin@copywrite.io", "password": "admin123"
+            "email": "testadmin@test.com", "password": "admin123"
         }, follow_redirects=True)
         assert b"Admin Dashboard" in r.data
 
@@ -354,7 +361,7 @@ class TestAuth:
         assert b"My Briefs" in r.data
 
     def test_logout_clears_session(self, admin_client):
-        r = admin_client.get("/portal/logout", follow_redirects=True)
+        r = admin_client.post("/portal/logout", follow_redirects=True)
         assert b"Sign in" in r.data
 
     def test_already_logged_in_admin_redirects_from_login(self, admin_client):
@@ -518,11 +525,11 @@ class TestClientRoutes:
         cid = db_module.get_user_by_email(portal_client_user["email"])["id"]
         bid = _make_brief(cid)
         r = auth_client.get(f"/portal/client/briefs/{bid}")
-        assert b"Pending" in r.data
+        assert b"Received" in r.data
 
     def test_brief_detail_shows_download_when_completed(self, auth_client, portal_client_user, flask_app):
         cid = db_module.get_user_by_email(portal_client_user["email"])["id"]
-        admin = db_module.get_user_by_email("admin@copywrite.io")
+        admin = db_module.get_user_by_email("admin@copydtc.com")
         bid = _make_brief(cid)
 
         # Write a real file
@@ -534,11 +541,11 @@ class TestClientRoutes:
         db_module.mark_brief_complete(bid)
 
         r = auth_client.get(f"/portal/client/briefs/{bid}")
-        assert b"Download copy" in r.data
+        assert b"Download" in r.data
 
     def test_download_copy_streams_file(self, auth_client, portal_client_user, flask_app):
         cid = db_module.get_user_by_email(portal_client_user["email"])["id"]
-        admin = db_module.get_user_by_email("admin@copywrite.io")
+        admin = db_module.get_user_by_email("admin@copydtc.com")
         bid = _make_brief(cid)
 
         upload_dir = flask_app.config["UPLOAD_FOLDER"]
@@ -751,6 +758,14 @@ class TestAdminRoutes:
 
 class TestAdminSettings:
 
+    KNOWN_ADMIN_PW = "knownpass123"
+
+    @pytest.fixture(autouse=True)
+    def _set_known_password(self, flask_app):
+        """Give the seeded admin a known password so we can test change-password."""
+        admin = db_module.get_user_by_email("admin@copydtc.com")
+        db_module.update_password(admin["id"], self.KNOWN_ADMIN_PW)
+
     def test_settings_page_returns_200(self, admin_client):
         r = admin_client.get("/portal/admin/settings")
         assert r.status_code == 200
@@ -768,19 +783,18 @@ class TestAdminSettings:
 
     def test_change_password_success(self, admin_client, flask_app):
         r = admin_client.post("/portal/admin/settings", data={
-            "current_password": "admin123",
+            "current_password": self.KNOWN_ADMIN_PW,
             "new_password": "newpassword99",
             "confirm_password": "newpassword99",
         })
         assert r.status_code in (200, 302)
-        # Verify new hash in DB
-        user = db_module.get_user_by_email("admin@copywrite.io")
+        user = db_module.get_user_by_email("admin@copydtc.com")
         from werkzeug.security import check_password_hash
         assert check_password_hash(user["password_hash"], "newpassword99")
 
     def test_change_password_success_shows_confirmation(self, admin_client):
         r = admin_client.post("/portal/admin/settings", data={
-            "current_password": "admin123",
+            "current_password": self.KNOWN_ADMIN_PW,
             "new_password": "newpassword99",
             "confirm_password": "newpassword99",
         })
@@ -794,13 +808,13 @@ class TestAdminSettings:
             "confirm_password": "newpassword99",
         })
         assert b"incorrect" in r.data.lower() or b"wrong" in r.data.lower() or b"Current password" in r.data
-        user = db_module.get_user_by_email("admin@copywrite.io")
+        user = db_module.get_user_by_email("admin@copydtc.com")
         from werkzeug.security import check_password_hash
-        assert check_password_hash(user["password_hash"], "admin123")
+        assert check_password_hash(user["password_hash"], self.KNOWN_ADMIN_PW)
 
     def test_short_new_password_rejected(self, admin_client):
         r = admin_client.post("/portal/admin/settings", data={
-            "current_password": "admin123",
+            "current_password": self.KNOWN_ADMIN_PW,
             "new_password": "short",
             "confirm_password": "short",
         })
@@ -808,7 +822,7 @@ class TestAdminSettings:
 
     def test_mismatched_passwords_rejected(self, admin_client):
         r = admin_client.post("/portal/admin/settings", data={
-            "current_password": "admin123",
+            "current_password": self.KNOWN_ADMIN_PW,
             "new_password": "newpassword99",
             "confirm_password": "different99x",
         })
@@ -823,9 +837,9 @@ class TestAdminSettings:
         assert r.status_code in (301, 302, 308)
 
     def test_update_password_db_helper(self, flask_app):
-        user = db_module.get_user_by_email("admin@copywrite.io")
+        user = db_module.get_user_by_email("admin@copydtc.com")
         db_module.update_password(user["id"], "brandnewpass1")
-        updated = db_module.get_user_by_email("admin@copywrite.io")
+        updated = db_module.get_user_by_email("admin@copydtc.com")
         from werkzeug.security import check_password_hash
         assert check_password_hash(updated["password_hash"], "brandnewpass1")
 
@@ -836,19 +850,24 @@ class TestAdminSettings:
 
 class TestLoginRateLimiting:
 
+    KNOWN_PW = "ratelimitpass1"
+
     def _clear_state(self):
         """Reset the in-memory failure dict between tests."""
         from portal import auth as auth_module
         auth_module._FAILED_LOGINS.clear()
 
+    def _ensure_known_admin(self):
+        """Give seeded admin a known password for login tests."""
+        admin = db_module.get_user_by_email("admin@copydtc.com")
+        db_module.update_password(admin["id"], self.KNOWN_PW)
+
     def test_repeated_failures_trigger_lockout(self, client, flask_app):
         self._clear_state()
         from portal import auth as auth_module
-        email = "admin@copywrite.io"
-        # Exhaust attempts
+        email = "admin@copydtc.com"
         for _ in range(auth_module._MAX_ATTEMPTS):
             client.post("/portal/login", data={"email": email, "password": "bad"})
-        # Next attempt should show lockout message
         r = client.post("/portal/login", data={"email": email, "password": "bad"})
         html = r.data.decode()
         assert "too many" in html.lower() or "wait" in html.lower()
@@ -856,27 +875,25 @@ class TestLoginRateLimiting:
 
     def test_successful_login_clears_failure_counter(self, client, flask_app):
         self._clear_state()
+        self._ensure_known_admin()
         from portal import auth as auth_module
-        email = "admin@copywrite.io"
-        # Record some failures
+        email = "admin@copydtc.com"
         client.post("/portal/login", data={"email": email, "password": "bad"})
         client.post("/portal/login", data={"email": email, "password": "bad"})
-        # Successful login clears them
-        client.post("/portal/login", data={"email": email, "password": "admin123"})
+        client.post("/portal/login", data={"email": email, "password": self.KNOWN_PW})
         assert email not in auth_module._FAILED_LOGINS
         self._clear_state()
 
     def test_lockout_does_not_affect_other_emails(self, client, flask_app):
         self._clear_state()
+        self._ensure_known_admin()
         from portal import auth as auth_module
         bad_email = "hacker@evil.com"
-        good_email = "admin@copywrite.io"
-        # Lock out bad_email
+        good_email = "admin@copydtc.com"
         for _ in range(auth_module._MAX_ATTEMPTS):
             client.post("/portal/login", data={"email": bad_email, "password": "bad"})
-        # good_email should still work
         r = client.post("/portal/login", data={
-            "email": good_email, "password": "admin123"
+            "email": good_email, "password": self.KNOWN_PW
         }, follow_redirects=True)
         assert b"Admin Dashboard" in r.data
         self._clear_state()

@@ -1,7 +1,11 @@
 """Cold DM Generator — Flask Blueprint (admin only)."""
 
+import logging
+
 import anthropic
 from flask import Blueprint, render_template, request, current_app, session, redirect, url_for
+
+logger = logging.getLogger(__name__)
 
 dm_bp = Blueprint("dm", __name__)
 
@@ -71,7 +75,8 @@ def index():
                 error = "Invalid API key. Check your ANTHROPIC_API_KEY."
             except anthropic.APIConnectionError:
                 error = "Could not reach the Anthropic API. Check your network."
-            except Exception as exc:
-                error = f"Unexpected error: {exc}"
+            except Exception:
+                logger.exception("DM generation failed")
+                error = "Something went wrong. Please try again."
 
     return render_template("index.html", dm=dm, error=error, bio=bio, caption=caption)

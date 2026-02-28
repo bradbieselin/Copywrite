@@ -34,13 +34,24 @@ from proposal import _parse_json, _build_user_message, generate_proposal_data
 def flask_app(tmp_path, monkeypatch):
     monkeypatch.setattr(db_module, "DB_PATH", str(tmp_path / "test.db"))
     _app = app_module.create_app()
-    _app.config.update(TESTING=True, ANTHROPIC_API_KEY="sk-test")
+    _app.config.update(TESTING=True, WTF_CSRF_ENABLED=False, ANTHROPIC_API_KEY="sk-test")
     return _app
+
+
+def _inject_admin_session(client):
+    """Set admin session on a test client."""
+    with client.session_transaction() as sess:
+        sess["user_id"] = 1
+        sess["user_name"] = "Admin"
+        sess["user_role"] = "admin"
+        sess["user_email"] = "admin@copydtc.com"
+    return client
 
 
 @pytest.fixture
 def client(flask_app):
     with flask_app.test_client() as c:
+        _inject_admin_session(c)
         yield c
 
 
@@ -228,26 +239,26 @@ class TestGenerateProposalData:
 class TestFormGet:
 
     def test_returns_200(self, client):
-        r = client.get("/proposal/")
+        r = client.get("/tools/proposal")
         assert r.status_code == 200
 
     def test_renders_all_input_fields(self, client):
-        html = client.get("/proposal/").data.decode()
+        html = client.get("/tools/proposal").data.decode()
         for name in ("your_name", "brand_name", "niche", "service", "price",
                      "pain_1", "pain_2", "pain_3"):
             assert f'name="{name}"' in html
 
     def test_no_error_on_fresh_load(self, client):
-        html = client.get("/proposal/").data.decode()
+        html = client.get("/tools/proposal").data.decode()
         assert "error" not in html.lower() or "class=\"error\"" not in html
 
     def test_nav_links_present(self, client):
-        html = client.get("/proposal/").data.decode()
-        assert "/intake/" in html
+        html = client.get("/tools/proposal").data.decode()
+        assert "/tools/intake" in html or "/intake" in html
         assert "/" in html
 
     def test_pain_3_marked_optional(self, client):
-        html = client.get("/proposal/").data.decode()
+        html = client.get("/tools/proposal").data.decode()
         assert "optional" in html.lower()
 
 
@@ -259,7 +270,7 @@ class TestFormPostValidation:
 
     def _post(self, c, overrides=None):
         data = {**_VALID_FORM, **(overrides or {})}
-        return c.post("/proposal/", data=data)
+        return c.post("/tools/proposal", data=data)
 
     def test_missing_your_name_shows_error(self, client):
         r = self._post(client, {"your_name": ""})
@@ -292,8 +303,9 @@ class TestFormPostValidation:
     def test_pain_3_is_optional(self, flask_app):
         """Omitting pain_3 should not trigger a validation error."""
         with flask_app.test_client() as c:
+            _inject_admin_session(c)
             with patch("proposal.generate_proposal_data", return_value=_VALID_PROPOSAL):
-                r = c.post("/proposal/", data={**_VALID_FORM, "pain_3": ""},
+                r = c.post("/tools/proposal", data={**_VALID_FORM, "pain_3": ""},
                            follow_redirects=True)
         assert b"required" not in r.data.lower()
 
@@ -305,32 +317,36 @@ class TestFormPostValidation:
     def test_no_api_key_shows_error(self, flask_app):
         flask_app.config["ANTHROPIC_API_KEY"] = ""
         with flask_app.test_client() as c:
-            r = c.post("/proposal/", data=_VALID_FORM)
+            _inject_admin_session(c)
+            r = c.post("/tools/proposal", data=_VALID_FORM)
         assert b"ANTHROPIC_API_KEY" in r.data
 
     def test_auth_error_shows_friendly_message(self, flask_app):
         import anthropic as anthropic_mod
         with flask_app.test_client() as c:
+            _inject_admin_session(c)
             with patch("proposal.generate_proposal_data",
                        side_effect=anthropic_mod.AuthenticationError(
                            message="bad key", response=MagicMock(), body={})):
-                r = c.post("/proposal/", data=_VALID_FORM)
+                r = c.post("/tools/proposal", data=_VALID_FORM)
         assert b"Invalid API key" in r.data
 
     def test_connection_error_shows_friendly_message(self, flask_app):
         import anthropic as anthropic_mod
         with flask_app.test_client() as c:
+            _inject_admin_session(c)
             with patch("proposal.generate_proposal_data",
                        side_effect=anthropic_mod.APIConnectionError(request=MagicMock())):
-                r = c.post("/proposal/", data=_VALID_FORM)
+                r = c.post("/tools/proposal", data=_VALID_FORM)
         assert b"Anthropic API" in r.data
 
     def test_json_parse_error_shows_friendly_message(self, flask_app):
         with flask_app.test_client() as c:
+            _inject_admin_session(c)
             with patch("proposal.generate_proposal_data",
                        side_effect=ValueError("bad json")):
-                r = c.post("/proposal/", data=_VALID_FORM)
-        assert b"parse error" in r.data.lower() or b"JSON" in r.data
+                r = c.post("/tools/proposal", data=_VALID_FORM)
+        assert b"parsed" in r.data.lower() or b"parse" in r.data.lower()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -342,16 +358,18 @@ class TestResultPage:
     @pytest.fixture
     def result_html(self, flask_app):
         with flask_app.test_client() as c:
+            _inject_admin_session(c)
             with patch("proposal.generate_proposal_data", return_value=_VALID_PROPOSAL):
-                r = c.post("/proposal/", data=_VALID_FORM)
+                r = c.post("/tools/proposal", data=_VALID_FORM)
         return r.data.decode()
 
     # ── HTTP / content type ───────────────────────────────────────────────────
 
     def test_returns_200(self, flask_app):
         with flask_app.test_client() as c:
+            _inject_admin_session(c)
             with patch("proposal.generate_proposal_data", return_value=_VALID_PROPOSAL):
-                r = c.post("/proposal/", data=_VALID_FORM)
+                r = c.post("/tools/proposal", data=_VALID_FORM)
         assert r.status_code == 200
 
     # ── header section ────────────────────────────────────────────────────────
@@ -455,7 +473,7 @@ class TestResultPage:
         assert "window.print()" in result_html
 
     def test_has_back_link(self, result_html):
-        assert "/proposal/" in result_html
+        assert "/tools/proposal" in result_html
         assert "New Proposal" in result_html
 
     def test_has_print_media_query(self, result_html):
@@ -479,8 +497,9 @@ class TestResultPage:
         }
         form_3pp = {**_VALID_FORM, "pain_3": "Instagram captions lead with features"}
         with flask_app.test_client() as c:
+            _inject_admin_session(c)
             with patch("proposal.generate_proposal_data", return_value=proposal_3pp):
-                r = c.post("/proposal/", data=form_3pp)
+                r = c.post("/tools/proposal", data=form_3pp)
         html = r.data.decode()
         assert "PP one headline" in html
         assert "PP two headline" in html

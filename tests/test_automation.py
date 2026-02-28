@@ -52,6 +52,7 @@ def flask_app(tmp_path, monkeypatch):
     _app = app_module.create_app()
     _app.config.update(
         TESTING=True,
+        WTF_CSRF_ENABLED=False,
         SECRET_KEY="test-secret",
         UPLOAD_FOLDER=str(tmp_path / "uploads"),
         # No ANTHROPIC_API_KEY → automation skips immediately in tests
@@ -63,7 +64,12 @@ def flask_app(tmp_path, monkeypatch):
 @pytest.fixture
 def admin_http(flask_app):
     with flask_app.test_client() as c:
-        c.post("/portal/login", data={"email": "admin@copywrite.io", "password": "admin123"})
+        admin = db_module.get_user_by_email("admin@copydtc.com")
+        with c.session_transaction() as sess:
+            sess["user_id"] = admin["id"]
+            sess["user_name"] = admin["name"]
+            sess["user_role"] = "admin"
+            sess["user_email"] = admin["email"]
         yield c
 
 
@@ -503,9 +509,13 @@ class TestNewBriefSpawnsThread:
 
     @pytest.fixture
     def auth_client(self, flask_app):
-        db_module.create_user("Bob", "bob@test.com", "pass1234", "client")
+        uid = db_module.create_user("Bob", "bob@test.com", "pass1234", "client")
         with flask_app.test_client() as c:
-            c.post("/portal/login", data={"email": "bob@test.com", "password": "pass1234"})
+            with c.session_transaction() as sess:
+                sess["user_id"] = uid
+                sess["user_name"] = "Bob"
+                sess["user_role"] = "client"
+                sess["user_email"] = "bob@test.com"
             yield c
 
     def _post_brief(self, c):
@@ -601,7 +611,12 @@ class TestAdminBriefDetailDraft:
     @pytest.fixture
     def admin_http_with_db(self, flask_app):
         with flask_app.test_client() as c:
-            c.post("/portal/login", data={"email": "admin@copywrite.io", "password": "admin123"})
+            admin = db_module.get_user_by_email("admin@copydtc.com")
+            with c.session_transaction() as sess:
+                sess["user_id"] = admin["id"]
+                sess["user_name"] = admin["name"]
+                sess["user_role"] = "admin"
+                sess["user_email"] = admin["email"]
             yield c
 
     def _create_brief(self):
@@ -635,10 +650,11 @@ class TestAdminBriefDetailDraft:
         r = admin_http_with_db.get(f"/portal/admin/briefs/{bid}")
         assert b"AI draft" in r.data
 
-    def test_draft_table_badge_shown_on_dashboard(self, admin_http_with_db, flask_app):
+    def test_draft_table_badge_shown_on_client_detail(self, admin_http_with_db, flask_app):
         bid = self._create_brief()
         db_module.save_draft(bid, "Some copy")
-        r = admin_http_with_db.get("/portal/admin/")
+        client = db_module.get_user_by_email("t@t.com")
+        r = admin_http_with_db.get(f"/portal/admin/clients/{client['id']}")
         assert b"draft ready" in r.data
 
 
@@ -751,8 +767,12 @@ class TestMarkCompleteNotification:
     @pytest.fixture
     def admin_http_with_db(self, flask_app):
         with flask_app.test_client() as c:
-            c.post("/portal/login",
-                   data={"email": "admin@copywrite.io", "password": "admin123"})
+            admin = db_module.get_user_by_email("admin@copydtc.com")
+            with c.session_transaction() as sess:
+                sess["user_id"] = admin["id"]
+                sess["user_name"] = admin["name"]
+                sess["user_role"] = "admin"
+                sess["user_email"] = admin["email"]
             yield c
 
     def _create_brief(self):

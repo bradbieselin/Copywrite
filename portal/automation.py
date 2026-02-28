@@ -9,6 +9,7 @@ Both steps are wrapped in try/except so a failure in one never blocks the other
 or surfaces an error to the client.
 """
 
+import html
 import json
 import logging
 import urllib.error
@@ -69,8 +70,8 @@ def generate_draft(brief: dict, api_key: str) -> str:
 # ── email notification ────────────────────────────────────────────────────────
 
 def _email_html(brief: dict, draft: str, brief_url: str) -> str:
-    escaped_draft = draft.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    draft_html = escaped_draft.replace("\n", "<br>")
+    esc = html.escape
+    draft_html = esc(draft).replace("\n", "<br>")
     return f"""
 <div style="font-family:sans-serif;max-width:600px;color:#111">
   <h2 style="margin-bottom:4px">New brief submitted</h2>
@@ -78,26 +79,26 @@ def _email_html(brief: dict, draft: str, brief_url: str) -> str:
   <hr style="border:none;border-top:1px solid #e5e5e5">
   <table style="width:100%;border-collapse:collapse">
     <tr><td style="padding:6px 0;color:#666;width:140px">Client</td>
-        <td style="padding:6px 0"><strong>{brief['client_name']}</strong>
-            &lt;{brief['client_email']}&gt;</td></tr>
+        <td style="padding:6px 0"><strong>{esc(brief['client_name'])}</strong>
+            &lt;{esc(brief['client_email'])}&gt;</td></tr>
     <tr><td style="padding:6px 0;color:#666">Brief title</td>
-        <td style="padding:6px 0">{brief['title']}</td></tr>
+        <td style="padding:6px 0">{esc(brief['title'])}</td></tr>
     <tr><td style="padding:6px 0;color:#666">Product</td>
-        <td style="padding:6px 0">{brief['product_name']}</td></tr>
+        <td style="padding:6px 0">{esc(brief['product_name'])}</td></tr>
     <tr><td style="padding:6px 0;color:#666">Type</td>
-        <td style="padding:6px 0">{brief['copy_type'].capitalize()}</td></tr>
+        <td style="padding:6px 0">{esc(brief['copy_type'].capitalize())}</td></tr>
     <tr><td style="padding:6px 0;color:#666">Tone</td>
-        <td style="padding:6px 0">{brief['tone'].capitalize()}</td></tr>
+        <td style="padding:6px 0">{esc(brief['tone'].capitalize())}</td></tr>
   </table>
   <hr style="border:none;border-top:1px solid #e5e5e5">
   <h3 style="margin-bottom:8px">First draft (auto-generated)</h3>
   <div style="background:#f5f5f5;padding:16px;border-radius:6px;
               font-size:15px;line-height:1.6">{draft_html}</div>
   <div style="margin-top:24px">
-    <a href="{brief_url}"
+    <a href="{esc(brief_url)}"
        style="background:#111;color:#fff;padding:10px 20px;border-radius:6px;
               text-decoration:none;font-size:14px">
-      Review in Admin Portal →
+      Review in Admin Portal &rarr;
     </a>
   </div>
 </div>
@@ -154,21 +155,22 @@ def send_brief_notification(brief: dict, draft: str, config: dict) -> None:
 # ── client completion notification ────────────────────────────────────────────
 
 def _completion_email_html(brief: dict, brief_url: str) -> str:
+    esc = html.escape
     return f"""
 <div style="font-family:sans-serif;max-width:600px;color:#111">
   <h2 style="margin-bottom:4px">Your copy is ready!</h2>
   <p style="color:#666;margin-top:0">Copywrite Client Portal</p>
   <hr style="border:none;border-top:1px solid #e5e5e5">
   <p style="font-size:15px;line-height:1.6">
-    Hi {brief['client_name']},<br><br>
-    Great news — your copy for <strong>{brief['title']}</strong> has been
+    Hi {esc(brief['client_name'])},<br><br>
+    Great news &mdash; your copy for <strong>{esc(brief['title'])}</strong> has been
     completed and is ready for download in your client portal.
   </p>
   <div style="margin-top:24px">
-    <a href="{brief_url}"
+    <a href="{esc(brief_url)}"
        style="background:#111;color:#fff;padding:10px 20px;border-radius:6px;
               text-decoration:none;font-size:14px">
-      View &amp; Download Copy →
+      View &amp; Download Copy &rarr;
     </a>
   </div>
   <p style="font-size:13px;color:#999;margin-top:32px">
@@ -230,35 +232,36 @@ def send_completion_notification(brief: dict, config: dict) -> None:
 # ── welcome email (new client account) ───────────────────────────────────────
 
 def _welcome_email_html(name: str, email: str, password: str, login_url: str) -> str:
+    esc = html.escape
     return f"""
 <div style="font-family:sans-serif;max-width:600px;color:#111">
   <h2 style="margin-bottom:4px">Welcome to CopyDTC</h2>
   <p style="color:#666;margin-top:0">Your client portal account is ready.</p>
   <hr style="border:none;border-top:1px solid #e5e5e5">
   <p style="font-size:15px;line-height:1.6">
-    Hi {name},<br><br>
+    Hi {esc(name)},<br><br>
     Your account has been set up. Use the credentials below to log in.
-    You'll be prompted to choose a new password right after your first login.
+    You&#39;ll be prompted to choose a new password right after your first login.
   </p>
   <table style="background:#f5f5f5;border-radius:6px;padding:16px 20px;width:100%;border-collapse:collapse">
     <tr>
       <td style="padding:5px 0;color:#666;width:90px;font-size:14px">Email</td>
-      <td style="padding:5px 0;font-size:14px"><strong>{email}</strong></td>
+      <td style="padding:5px 0;font-size:14px"><strong>{esc(email)}</strong></td>
     </tr>
     <tr>
       <td style="padding:5px 0;color:#666;font-size:14px">Temp password</td>
-      <td style="padding:5px 0;font-size:14px"><strong>{password}</strong></td>
+      <td style="padding:5px 0;font-size:14px"><strong>{esc(password)}</strong></td>
     </tr>
   </table>
   <div style="margin-top:28px">
-    <a href="{login_url}"
+    <a href="{esc(login_url)}"
        style="background:#5b5bf8;color:#fff;padding:11px 22px;border-radius:8px;
               text-decoration:none;font-size:14px;font-weight:600">
-      Log in to your portal →
+      Log in to your portal &rarr;
     </a>
   </div>
   <p style="font-size:13px;color:#999;margin-top:32px">
-    If you didn't expect this email, you can safely ignore it.
+    If you didn&#39;t expect this email, you can safely ignore it.
   </p>
 </div>
 """.strip()
@@ -318,6 +321,12 @@ def run_brief_automation(brief: dict, config: dict) -> None:
     api_key = config.get("ANTHROPIC_API_KEY", "")
     if not api_key:
         return
+
+    # 0. Mark as in progress so the client sees status update immediately
+    try:
+        db_module.update_brief_status(brief["id"], "in_progress")
+    except Exception:
+        logger.exception("Failed to update status for brief %s.", brief["id"])
 
     # 1. Generate draft
     try:

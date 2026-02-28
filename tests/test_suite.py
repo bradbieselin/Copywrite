@@ -142,17 +142,26 @@ def flask_test_client(tmp_path, monkeypatch):
     """
     Returns a Flask test client with:
       - TESTING=True
+      - WTF_CSRF_ENABLED=False (so tests can POST without CSRF tokens)
       - a fresh temp SQLite DB (avoids polluting copywrite.db)
       - ANTHROPIC_API_KEY='fake-key' (real calls are mocked per-test)
+      - Logged in as admin (required by dm, intake, and proposal blueprints)
     """
     db_path = str(tmp_path / "test.db")
     monkeypatch.setattr(db_module, "DB_PATH", db_path)
 
     _app = app_module.create_app()
     _app.config["TESTING"] = True
+    _app.config["WTF_CSRF_ENABLED"] = False
     _app.config["ANTHROPIC_API_KEY"] = "fake-key"
 
     with _app.test_client() as client:
+        # Log in as admin so blueprint before_request checks pass
+        with client.session_transaction() as sess:
+            sess["user_id"] = 1
+            sess["user_name"] = "Admin"
+            sess["user_role"] = "admin"
+            sess["user_email"] = "admin@copydtc.com"
         yield client
 
 
@@ -164,7 +173,7 @@ class TestAppFactory:
     def test_blueprints_registered(self):
         rules = {str(r) for r in app_module.app.url_map.iter_rules()}
         assert "/" in rules
-        assert "/intake/" in rules
+        assert "/tools/intake" in rules
 
     def test_api_key_loaded_from_env(self, monkeypatch):
         monkeypatch.setenv("ANTHROPIC_API_KEY", "sentinel-value")
@@ -183,24 +192,23 @@ class TestAppFactory:
 
 class TestDmGet:
     def test_get_returns_200(self, flask_test_client):
-        r = flask_test_client.get("/")
+        r = flask_test_client.get("/tools/dm")
         assert r.status_code == 200
 
     def test_get_renders_form_fields(self, flask_test_client):
-        r = flask_test_client.get("/")
+        r = flask_test_client.get("/tools/dm")
         html = r.data.decode()
         assert "Cold DM Generator" in html
         assert 'name="bio"' in html
         assert 'name="caption"' in html
 
     def test_get_renders_nav_links(self, flask_test_client):
-        r = flask_test_client.get("/")
+        r = flask_test_client.get("/tools/dm")
         html = r.data.decode()
-        assert "/intake" in html
-        assert "Copy Generator" in html
+        assert "/intake" in html or "/tools/intake" in html
 
     def test_get_no_dm_section_initially(self, flask_test_client):
-        r = flask_test_client.get("/")
+        r = flask_test_client.get("/tools/dm")
         html = r.data.decode()
         assert "Your DM" not in html
 
@@ -211,19 +219,19 @@ class TestDmGet:
 
 class TestDmPostValidation:
     def test_empty_bio_and_caption_shows_error(self, flask_test_client):
-        r = flask_test_client.post("/", data={"bio": "", "caption": ""})
+        r = flask_test_client.post("/tools/dm", data={"bio": "", "caption": ""})
         html = r.data.decode()
         assert r.status_code == 200
         assert "at least" in html.lower()
 
     def test_whitespace_only_treated_as_empty(self, flask_test_client):
-        r = flask_test_client.post("/", data={"bio": "   ", "caption": "\t"})
+        r = flask_test_client.post("/tools/dm", data={"bio": "   ", "caption": "\t"})
         html = r.data.decode()
         assert "at least" in html.lower()
 
     def test_missing_api_key_shows_error(self, flask_test_client):
         flask_test_client.application.config["ANTHROPIC_API_KEY"] = ""
-        r = flask_test_client.post("/", data={"bio": "test bio", "caption": "test"})
+        r = flask_test_client.post("/tools/dm", data={"bio": "test bio", "caption": "test"})
         html = r.data.decode()
         assert "ANTHROPIC_API_KEY" in html
         # restore
@@ -233,7 +241,7 @@ class TestDmPostValidation:
         """Submitting with only a bio (no caption) should not show 'at least' error."""
         with patch("dm.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.return_value = _mock_message("Hey there!")
-            r = flask_test_client.post("/", data={"bio": "A great brand.", "caption": ""})
+            r = flask_test_client.post("/tools/dm", data={"bio": "A great brand.", "caption": ""})
         html = r.data.decode()
         assert "at least" not in html.lower()
 
@@ -241,7 +249,7 @@ class TestDmPostValidation:
         """Submitting with only a caption (no bio) should not show 'at least' error."""
         with patch("dm.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.return_value = _mock_message("Hey there!")
-            r = flask_test_client.post("/", data={"bio": "", "caption": "Great caption here."})
+            r = flask_test_client.post("/tools/dm", data={"bio": "", "caption": "Great caption here."})
         html = r.data.decode()
         assert "at least" not in html.lower()
 
@@ -257,7 +265,7 @@ class TestDmPostHappyPath:
                 "Hey, loved your skincare content!"
             )
             r = flask_test_client.post(
-                "/", data={"bio": "Clean skincare", "caption": "Our new drop is live."}
+                "/tools/dm", data={"bio": "Clean skincare", "caption": "Our new drop is live."}
             )
         html = r.data.decode()
         assert r.status_code == 200
@@ -267,21 +275,21 @@ class TestDmPostHappyPath:
         with patch("dm.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.return_value = _mock_message("DM text")
             r = flask_test_client.post(
-                "/", data={"bio": "Bio", "caption": "Caption"}
+                "/tools/dm", data={"bio": "Bio", "caption": "Caption"}
             )
         assert b"copy-btn" in r.data
 
     def test_successful_generation_shows_word_count_script(self, flask_test_client):
         with patch("dm.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.return_value = _mock_message("DM text")
-            r = flask_test_client.post("/", data={"bio": "Bio", "caption": "Cap"})
+            r = flask_test_client.post("/tools/dm", data={"bio": "Bio", "caption": "Cap"})
         assert b"wordCount" in r.data
 
     def test_form_repopulates_bio_on_success(self, flask_test_client):
         with patch("dm.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.return_value = _mock_message("DM")
             r = flask_test_client.post(
-                "/", data={"bio": "UniqueB1o", "caption": "Cap"}
+                "/tools/dm", data={"bio": "UniqueB1o", "caption": "Cap"}
             )
         assert b"UniqueB1o" in r.data
 
@@ -289,12 +297,12 @@ class TestDmPostHappyPath:
         with patch("dm.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.return_value = _mock_message("DM")
             r = flask_test_client.post(
-                "/", data={"bio": "Bio", "caption": "Unique_Caption_987"}
+                "/tools/dm", data={"bio": "Bio", "caption": "Unique_Caption_987"}
             )
         assert b"Unique_Caption_987" in r.data
 
     def test_form_repopulates_on_validation_error(self, flask_test_client):
-        r = flask_test_client.post("/", data={"bio": "", "caption": ""})
+        r = flask_test_client.post("/tools/dm", data={"bio": "", "caption": ""})
         assert r.status_code == 200  # stays on same page, no redirect
 
     def test_anthropic_auth_error_shows_message(self, flask_test_client):
@@ -303,7 +311,7 @@ class TestDmPostHappyPath:
             mock_cls.return_value.messages.create.side_effect = ant.AuthenticationError(
                 message="bad key", response=MagicMock(), body={}
             )
-            r = flask_test_client.post("/", data={"bio": "Bio", "caption": "Cap"})
+            r = flask_test_client.post("/tools/dm", data={"bio": "Bio", "caption": "Cap"})
         html = r.data.decode()
         assert "Invalid API key" in html
 
@@ -313,32 +321,32 @@ class TestDmPostHappyPath:
             mock_cls.return_value.messages.create.side_effect = ant.APIConnectionError(
                 request=MagicMock()
             )
-            r = flask_test_client.post("/", data={"bio": "Bio", "caption": "Cap"})
+            r = flask_test_client.post("/tools/dm", data={"bio": "Bio", "caption": "Cap"})
         html = r.data.decode()
         assert "network" in html.lower() or "connect" in html.lower() or "api" in html.lower()
 
     def test_generic_exception_shows_message(self, flask_test_client):
         with patch("dm.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.side_effect = RuntimeError("boom")
-            r = flask_test_client.post("/", data={"bio": "Bio", "caption": "Cap"})
+            r = flask_test_client.post("/tools/dm", data={"bio": "Bio", "caption": "Cap"})
         html = r.data.decode()
-        assert "boom" in html or "Unexpected error" in html
+        assert "Something went wrong" in html
 
     def test_empty_content_from_claude_shows_error(self, flask_test_client):
         with patch("dm.anthropic.Anthropic") as mock_cls:
             empty_msg = MagicMock()
             empty_msg.content = []
             mock_cls.return_value.messages.create.return_value = empty_msg
-            r = flask_test_client.post("/", data={"bio": "Bio", "caption": "Cap"})
+            r = flask_test_client.post("/tools/dm", data={"bio": "Bio", "caption": "Cap"})
         html = r.data.decode()
         assert r.status_code == 200
-        assert "error" in html.lower() or "empty" in html.lower()
+        assert "error" in html.lower() or "wrong" in html.lower()
 
     def test_claude_called_with_correct_model(self, flask_test_client):
         with patch("dm.anthropic.Anthropic") as mock_cls:
             mock_instance = mock_cls.return_value
             mock_instance.messages.create.return_value = _mock_message("DM")
-            flask_test_client.post("/", data={"bio": "Bio", "caption": "Cap"})
+            flask_test_client.post("/tools/dm", data={"bio": "Bio", "caption": "Cap"})
         call_kwargs = mock_instance.messages.create.call_args
         assert call_kwargs.kwargs.get("model") == "claude-sonnet-4-6"
 
@@ -349,16 +357,16 @@ class TestDmPostHappyPath:
 
 class TestIntakeGet:
     def test_get_returns_200(self, flask_test_client):
-        r = flask_test_client.get("/intake/")
+        r = flask_test_client.get("/tools/intake")
         assert r.status_code == 200
 
-    def test_get_slash_intake_redirects(self, flask_test_client):
-        """GET /intake (no trailing slash) should redirect to /intake/."""
-        r = flask_test_client.get("/intake")
-        assert r.status_code in (301, 308)
+    def test_get_slash_intake_returns_200(self, flask_test_client):
+        """GET /tools/intake should return the intake form."""
+        r = flask_test_client.get("/tools/intake")
+        assert r.status_code == 200
 
     def test_get_renders_all_form_fields(self, flask_test_client):
-        r = flask_test_client.get("/intake/")
+        r = flask_test_client.get("/tools/intake")
         html = r.data.decode()
         for field in [
             "product_name", "product_description", "target_audience",
@@ -367,25 +375,25 @@ class TestIntakeGet:
             assert field in html, f"Field '{field}' missing from intake form"
 
     def test_get_renders_tone_options(self, flask_test_client):
-        r = flask_test_client.get("/intake/")
+        r = flask_test_client.get("/tools/intake")
         html = r.data.decode()
         for tone in ["professional", "casual", "bold", "friendly"]:
             assert tone in html
 
     def test_get_renders_copy_type_options(self, flask_test_client):
-        r = flask_test_client.get("/intake/")
+        r = flask_test_client.get("/tools/intake")
         html = r.data.decode()
         for ct in ["email", "Instagram caption", "Facebook ad", "landing page headline"]:
             assert ct in html
 
     def test_get_renders_nav_links(self, flask_test_client):
-        r = flask_test_client.get("/intake/")
+        r = flask_test_client.get("/tools/intake")
         html = r.data.decode()
         assert "Cold DM Generator" in html
         assert "Copy Generator" in html
 
     def test_get_no_error_initially(self, flask_test_client):
-        r = flask_test_client.get("/intake/")
+        r = flask_test_client.get("/tools/intake")
         html = r.data.decode()
         assert 'class="error"' not in html
 
@@ -399,7 +407,7 @@ class TestIntakePostValidation:
         data = dict(VALID_FORM)
         if overrides:
             data.update(overrides)
-        return client.post("/intake/", data=data)
+        return client.post("/tools/intake", data=data)
 
     def test_missing_product_name_shows_error(self, flask_test_client):
         r = self._post(flask_test_client, {"product_name": ""})
@@ -469,7 +477,7 @@ class TestIntakePostHappyPath:
             mock_cls.return_value.messages.create.return_value = _mock_message(
                 THREE_VARIATIONS_RAW
             )
-            return client.post("/intake/", data=VALID_FORM)
+            return client.post("/tools/intake", data=VALID_FORM)
 
     def test_success_returns_200(self, flask_test_client):
         r = self._post(flask_test_client)
@@ -521,7 +529,7 @@ class TestIntakePostHappyPath:
             mock_cls.return_value.messages.create.return_value = _mock_message(
                 THREE_VARIATIONS_RAW
             )
-            flask_test_client.post("/intake/", data=VALID_FORM)
+            flask_test_client.post("/tools/intake", data=VALID_FORM)
         call_kwargs = mock_cls.return_value.messages.create.call_args
         assert call_kwargs.kwargs.get("model") == "claude-sonnet-4-6"
 
@@ -531,7 +539,7 @@ class TestIntakePostHappyPath:
         )
         with patch("intake.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.return_value = _mock_message(four_var)
-            r = flask_test_client.post("/intake/", data=VALID_FORM)
+            r = flask_test_client.post("/tools/intake", data=VALID_FORM)
         html = r.data.decode()
         assert "Variation 4" not in html
         assert "Variation 3" in html
@@ -548,7 +556,7 @@ class TestIntakePostErrors:
             mock_cls.return_value.messages.create.side_effect = ant.AuthenticationError(
                 message="bad key", response=MagicMock(), body={}
             )
-            r = flask_test_client.post("/intake/", data=VALID_FORM)
+            r = flask_test_client.post("/tools/intake", data=VALID_FORM)
         assert b"Invalid API key" in r.data
 
     def test_connection_error_shows_message(self, flask_test_client):
@@ -557,7 +565,7 @@ class TestIntakePostErrors:
             mock_cls.return_value.messages.create.side_effect = ant.APIConnectionError(
                 request=MagicMock()
             )
-            r = flask_test_client.post("/intake/", data=VALID_FORM)
+            r = flask_test_client.post("/tools/intake", data=VALID_FORM)
         html = r.data.decode()
         assert "connect" in html.lower() or "network" in html.lower() or "api" in html.lower()
 
@@ -567,24 +575,24 @@ class TestIntakePostErrors:
             mock_cls.return_value.messages.create.return_value = _mock_message(
                 "Only one variation, no delimiter."
             )
-            r = flask_test_client.post("/intake/", data=VALID_FORM)
+            r = flask_test_client.post("/tools/intake", data=VALID_FORM)
         html = r.data.decode()
         assert r.status_code == 200
-        assert "error" in html.lower() or "Unexpected error" in html
+        assert "error" in html.lower() or "wrong" in html.lower()
 
     def test_generic_exception_shows_message(self, flask_test_client):
         with patch("intake.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.side_effect = RuntimeError("kaboom")
-            r = flask_test_client.post("/intake/", data=VALID_FORM)
+            r = flask_test_client.post("/tools/intake", data=VALID_FORM)
         html = r.data.decode()
-        assert "kaboom" in html or "Unexpected error" in html
+        assert "Something went wrong" in html
 
     def test_empty_response_from_claude_shows_error(self, flask_test_client):
         with patch("intake.anthropic.Anthropic") as mock_cls:
             empty = MagicMock()
             empty.content = []
             mock_cls.return_value.messages.create.return_value = empty
-            r = flask_test_client.post("/intake/", data=VALID_FORM)
+            r = flask_test_client.post("/tools/intake", data=VALID_FORM)
         assert r.status_code == 200
         html = r.data.decode()
         assert "error" in html.lower() or "empty" in html.lower()
@@ -593,7 +601,7 @@ class TestIntakePostErrors:
         db_path = db_module.DB_PATH
         with patch("intake.anthropic.Anthropic") as mock_cls:
             mock_cls.return_value.messages.create.side_effect = RuntimeError("fail")
-            flask_test_client.post("/intake/", data=VALID_FORM)
+            flask_test_client.post("/tools/intake", data=VALID_FORM)
         with sqlite3.connect(db_path) as conn:
             count = conn.execute("SELECT COUNT(*) FROM submissions").fetchone()[0]
         assert count == 0
@@ -634,59 +642,58 @@ class TestScraperHelpers:
     def _item(self, **kwargs):
         base = {
             "username": "testbrand",
+            "fullName": "Test Brand",
             "followersCount": 10000,
             "biography": "We make great stuff.",
-            "externalUrl": "https://testbrand.com",
-            "postsCount": 200,
         }
         base.update(kwargs)
         return base
 
     def test_extract_profile_returns_dict(self):
-        result = scraper.extract_profile(self._item())
+        result = scraper.extract_profile(self._item(), "dtcbrand")
         assert isinstance(result, dict)
 
     def test_extract_profile_username_stripped(self):
-        result = scraper.extract_profile(self._item(username="@testbrand"))
+        result = scraper.extract_profile(self._item(username="@testbrand"), "dtcbrand")
         assert result["username"] == "testbrand"
 
     def test_extract_profile_follower_count(self):
-        result = scraper.extract_profile(self._item(followersCount=50000))
+        result = scraper.extract_profile(self._item(followersCount=50000), "dtcbrand")
         assert result["follower_count"] == 50000
 
     def test_extract_profile_follower_count_zero_when_none(self):
-        result = scraper.extract_profile(self._item(followersCount=None))
+        result = scraper.extract_profile(self._item(followersCount=None), "dtcbrand")
         assert result["follower_count"] == 0
 
-    def test_extract_profile_post_count(self):
-        result = scraper.extract_profile(self._item(postsCount=150))
-        assert result["post_count"] == 150
+    def test_extract_profile_full_name(self):
+        result = scraper.extract_profile(self._item(fullName="Cool Brand"), "dtcbrand")
+        assert result["full_name"] == "Cool Brand"
 
-    def test_extract_profile_post_count_zero_when_none(self):
-        result = scraper.extract_profile(self._item(postsCount=None))
-        assert result["post_count"] == 0
+    def test_extract_profile_profile_url(self):
+        result = scraper.extract_profile(self._item(), "dtcbrand")
+        assert result["profile_url"] == "https://www.instagram.com/testbrand/"
 
     def test_extract_profile_biography_newlines_replaced(self):
-        result = scraper.extract_profile(self._item(biography="Line one.\nLine two."))
+        result = scraper.extract_profile(self._item(biography="Line one.\nLine two."), "dtcbrand")
         assert "\n" not in result["bio"]
         assert "Line one." in result["bio"]
 
-    def test_extract_profile_website_url(self):
-        result = scraper.extract_profile(self._item(externalUrl="https://brand.io"))
-        assert result["website_url"] == "https://brand.io"
+    def test_extract_profile_hashtag_stored(self):
+        result = scraper.extract_profile(self._item(), "shopify")
+        assert result["hashtag"] == "shopify"
 
     def test_extract_profile_returns_none_when_no_username(self):
         item = self._item(username="", ownerUsername="")
         item.pop("username", None)
         item.pop("ownerUsername", None)
-        result = scraper.extract_profile(item)
+        result = scraper.extract_profile(item, "dtcbrand")
         assert result is None
 
     def test_extract_profile_falls_back_to_ownerUsername(self):
         item = self._item()
         item["username"] = ""
         item["ownerUsername"] = "fallbackbrand"
-        result = scraper.extract_profile(item)
+        result = scraper.extract_profile(item, "dtcbrand")
         assert result["username"] == "fallbackbrand"
 
     # ── in_follower_range ─────────────────────────────────────────────────────
@@ -745,8 +752,10 @@ class TestScraperHelpers:
     def test_save_to_csv_writes_rows(self, tmp_path):
         filepath = str(tmp_path / "out.csv")
         profiles = [
-            {"username": "brand1", "follower_count": 10000, "bio": "B1",
-             "website_url": "https://b1.com", "post_count": 50},
+            {"username": "brand1", "full_name": "Brand One",
+             "follower_count": 10000, "bio": "B1",
+             "profile_url": "https://www.instagram.com/brand1/",
+             "hashtag": "dtcbrand"},
         ]
         scraper.save_to_csv(profiles, filepath)
         with open(filepath) as f:

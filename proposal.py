@@ -1,11 +1,14 @@
 """Proposal Generator — Flask Blueprint (admin only)."""
 
 import json
+import logging
 import re
 from datetime import date
 
 import anthropic
 from flask import Blueprint, render_template, request, current_app, session, redirect, url_for
+
+logger = logging.getLogger(__name__)
 
 proposal_bp = Blueprint("proposal", __name__)
 
@@ -136,9 +139,11 @@ def form():
                 error = "Invalid API key. Check your ANTHROPIC_API_KEY."
             except anthropic.APIConnectionError:
                 error = "Could not reach the Anthropic API. Check your network."
-            except (json.JSONDecodeError, ValueError) as exc:
-                error = f"Proposal generation failed (JSON parse error): {exc}"
-            except Exception as exc:
-                error = f"Unexpected error: {exc}"
+            except (json.JSONDecodeError, ValueError):
+                logger.exception("Proposal JSON parse error")
+                error = "Proposal generation failed — the AI response couldn't be parsed. Please try again."
+            except Exception:
+                logger.exception("Proposal generation failed")
+                error = "Something went wrong. Please try again."
 
     return render_template("proposal/form.html", error=error, form_data=form_data)

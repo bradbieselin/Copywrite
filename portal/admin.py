@@ -326,6 +326,57 @@ def _run_scraper_thread(hashtags: list[str], max_results: int, output_file: str,
             _scraper_state["finished_at"] = datetime.datetime.now().isoformat(timespec="seconds")
 
 
+@admin_bp.route("/briefs/<int:brief_id>/download")
+@admin_required
+def download_copy(brief_id):
+    brief = db_module.get_brief(brief_id)
+    if not brief:
+        flash("Brief not found.", "danger")
+        return redirect(url_for("portal_admin.dashboard"))
+    copy_file = db_module.get_copy_file(brief_id)
+    if not copy_file:
+        flash("No file has been uploaded yet.", "warning")
+        return redirect(url_for("portal_admin.brief_detail", brief_id=brief_id))
+    upload_dir = os.path.realpath(current_app.config["UPLOAD_FOLDER"])
+    file_path = os.path.realpath(
+        os.path.join(upload_dir, copy_file["storage_filename"])
+    )
+    if not file_path.startswith(upload_dir + os.sep):
+        flash("Invalid file path.", "danger")
+        return redirect(url_for("portal_admin.brief_detail", brief_id=brief_id))
+    if not os.path.exists(file_path):
+        flash("File not found on server.", "danger")
+        return redirect(url_for("portal_admin.brief_detail", brief_id=brief_id))
+    return send_file(file_path, as_attachment=True, download_name=copy_file["original_filename"])
+
+
+@admin_bp.route("/briefs/<int:brief_id>/download-ref/<int:file_id>")
+@admin_required
+def download_reference(brief_id, file_id):
+    brief = db_module.get_brief(brief_id)
+    if not brief:
+        flash("Brief not found.", "danger")
+        return redirect(url_for("portal_admin.dashboard"))
+    ref_files = db_module.get_reference_files(brief_id)
+    ref_file = next((f for f in ref_files if f["id"] == file_id), None)
+    if not ref_file:
+        flash("Reference file not found.", "danger")
+        return redirect(url_for("portal_admin.brief_detail", brief_id=brief_id))
+    upload_dir = os.path.realpath(current_app.config["UPLOAD_FOLDER"])
+    file_path = os.path.realpath(
+        os.path.join(upload_dir, ref_file["storage_filename"])
+    )
+    if not file_path.startswith(upload_dir + os.sep):
+        flash("Invalid file path.", "danger")
+        return redirect(url_for("portal_admin.brief_detail", brief_id=brief_id))
+    if not os.path.exists(file_path):
+        flash("File not found on server.", "danger")
+        return redirect(url_for("portal_admin.brief_detail", brief_id=brief_id))
+    return send_file(file_path, as_attachment=True, download_name=ref_file["original_filename"])
+
+
+# ── Lead Scraper ───────────────────────────────────────────────────────────
+
 @admin_bp.route("/scraper")
 @admin_required
 def scraper():
@@ -423,7 +474,11 @@ def scraper_status():
 @admin_bp.route("/scraper/download")
 @admin_required
 def scraper_download():
-    csv_path = _leads_csv_path()
+    csv_path = os.path.realpath(_leads_csv_path())
+    upload_dir = os.path.realpath(current_app.config["UPLOAD_FOLDER"])
+    if not csv_path.startswith(upload_dir + os.sep):
+        flash("Invalid file path.", "danger")
+        return redirect(url_for("portal_admin.scraper"))
     if not os.path.exists(csv_path):
         flash("No leads file found. Run the scraper first.", "warning")
         return redirect(url_for("portal_admin.scraper"))

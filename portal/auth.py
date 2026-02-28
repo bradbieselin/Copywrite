@@ -19,6 +19,16 @@ auth_bp = Blueprint("portal_auth", __name__)
 _FAILED_LOGINS: dict = {}
 _MAX_ATTEMPTS  = 5
 _LOCKOUT_SECS  = 15 * 60   # 15 minutes
+_MAX_TRACKED   = 10_000     # cap to prevent memory exhaustion
+
+
+def _evict_expired() -> None:
+    """Remove entries whose lockout window has expired."""
+    now = time.time()
+    expired = [k for k, v in _FAILED_LOGINS.items()
+               if now - v["first_at"] > _LOCKOUT_SECS]
+    for k in expired:
+        _FAILED_LOGINS.pop(k, None)
 
 
 def _is_locked_out(email: str) -> bool:
@@ -32,6 +42,12 @@ def _is_locked_out(email: str) -> bool:
 
 
 def _record_failure(email: str) -> None:
+    # Prevent unbounded growth from brute-force with random emails
+    if len(_FAILED_LOGINS) >= _MAX_TRACKED:
+        _evict_expired()
+    if len(_FAILED_LOGINS) >= _MAX_TRACKED:
+        return  # silently refuse to track more; existing lockouts still enforced
+
     entry = _FAILED_LOGINS.get(email)
     now = time.time()
     if not entry or (now - entry["first_at"] > _LOCKOUT_SECS):
@@ -125,7 +141,7 @@ def login():
     return render_template("portal/login.html", error=error)
 
 
-@auth_bp.route("/logout")
+@auth_bp.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect(url_for("portal_auth.login"))
