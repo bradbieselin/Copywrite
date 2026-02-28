@@ -6,14 +6,14 @@
   <title>About — CopyDTC</title>
   <meta name="description" content="Meet Brad Bieselin — DTC copywriter helping brands write emails, ads, and landing pages that convert. Learn about his background and approach." />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://bradbieselincopywriting.com/about" />
+  <link rel="canonical" href="https://copydtc.com/about" />
 
   <!-- Open Graph -->
   <meta property="og:type"        content="profile" />
-  <meta property="og:url"         content="https://bradbieselincopywriting.com/about" />
-  <meta property="og:title"       content="About Brad Bieselin — DTC Copywriter" />
+  <meta property="og:url"         content="https://copydtc.com/about" />
+  <meta property="og:title"       content="About Brad Bieselin — CopyDTC" />
   <meta property="og:description" content="DTC copywriter helping brands write emails, ads, and landing pages that convert." />
-  <meta property="og:image"       content="https://bradbieselincopywriting.com/static/images/brad.jpg" />
+  <meta property="og:image"       content="https://copydtc.com/static/images/headshot1.jpg" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
@@ -25,6 +25,7 @@
     :root {
       --indigo:   #5b5bf8;
       --indigo-d: #4a4ae0;
+      --indigo-l: #ededff;
       --dark:     #0f0f1e;
       --dark-2:   #1a1a2e;
       --text:     #1a1a1a;
@@ -59,11 +60,13 @@
 
     .nav-logo {
       font-size: 1rem;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text);
       text-decoration: none;
-      letter-spacing: -.01em;
+      letter-spacing: -.02em;
     }
+
+    .nav-logo span { color: var(--indigo); }
 
     .nav-links {
       display: flex;
@@ -362,9 +365,11 @@
 
   <!-- ── NAV ── -->
   <nav>
-    <a href="/" class="nav-logo">CopyDTC</a>
+    <a href="/" class="nav-logo">Copy<span>DTC</span></a>
     <ul class="nav-links">
       <li><a href="/#services">Services</a></li>
+      <li><a href="/#portfolio">Work</a></li>
+      <li><a href="/#reviews">Reviews</a></li>
       <li><a href="/about" class="active">About</a></li>
       <li><a href="/#contact">Contact</a></li>
       <li><a href="/portal/login" class="btn-login">Client Login</a></li>
@@ -385,6 +390,8 @@
   <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
     <ul>
       <li><a href="/#services">Services</a></li>
+      <li><a href="/#portfolio">Work</a></li>
+      <li><a href="/#reviews">Reviews</a></li>
       <li><a href="/about">About</a></li>
       <li><a href="/#contact">Contact</a></li>
     </ul>
@@ -466,6 +473,9 @@
       <span>&copy; 2026 CopyDTC</span>
       <div>
         <a href="/#services">Services</a>
+        <a href="/#portfolio">Work</a>
+        <a href="/#reviews">Reviews</a>
+        <a href="/about">About</a>
         <a href="/#contact">Contact</a>
         <a href="/portal/login">Client Login</a>
       </div>

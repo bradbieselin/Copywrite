@@ -665,7 +665,6 @@
       height: 1px;
       opacity: 0;
       pointer-events: none;
-      tabindex: -1;
     }
 
     .btn-submit {
@@ -1139,7 +1138,7 @@
             {% endfor %}
           {% endwith %}
 
-          <form method="POST" action="/contact">
+          <form method="POST" action="{{ url_for('landing.contact') }}">
             <!-- Honeypot: bots fill this, humans don't -->
             <div class="hp-field" aria-hidden="true">
               <label for="url">Website</label>
@@ -1149,16 +1148,16 @@
             <div class="form-field">
               <label for="name">Your name</label>
               <input type="text" id="name" name="name" placeholder="Jane Smith"
-                     autocomplete="name" required />
+                     autocomplete="name" maxlength="120" required />
             </div>
             <div class="form-field">
               <label for="email">Email address</label>
               <input type="email" id="email" name="email" placeholder="jane@yourbrand.com"
-                     autocomplete="email" required />
+                     autocomplete="email" maxlength="254" required />
             </div>
             <div class="form-field">
               <label for="message">What do you need?</label>
-              <textarea id="message" name="message" rows="4" required
+              <textarea id="message" name="message" rows="4" maxlength="2000" required
                 placeholder="e.g. We sell sustainable skincare. We need a 5-email welcome flow and a landing page rewrite — ASAP."></textarea>
             </div>
             <button type="submit" class="btn-submit">Send Message &rarr;</button>

@@ -1,9 +1,12 @@
 """Marketing landing page — Flask Blueprint."""
 
 import os
+import re
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 
 import db as db_module
+
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 landing_bp = Blueprint("landing", __name__)
 
@@ -35,6 +38,10 @@ def contact():
 
     if not name or not email or not message:
         flash("Please fill in all fields.", "error")
+        return redirect(url_for("landing.index") + "#contact")
+
+    if not _EMAIL_RE.match(email):
+        flash("Please enter a valid email address.", "error")
         return redirect(url_for("landing.index") + "#contact")
 
     db_module.save_contact(name, email, message)

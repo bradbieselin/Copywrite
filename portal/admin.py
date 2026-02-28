@@ -340,7 +340,10 @@ def scraper_run():
         flash("Enter at least one hashtag.", "danger")
         return redirect(url_for("portal_admin.scraper"))
 
-    max_results = min(max(int(request.form.get("max_results", 200)), 10), 500)
+    try:
+        max_results = min(max(int(request.form.get("max_results", 200)), 10), 500)
+    except (ValueError, TypeError):
+        max_results = 200
     output_file = _leads_csv_path()
 
     _scraper_stop_event.clear()

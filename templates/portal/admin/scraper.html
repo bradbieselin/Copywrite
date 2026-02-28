@@ -187,6 +187,24 @@ ecommerce</textarea>
 
 <script>
 (function () {
+  // Escape HTML to prevent XSS when building table rows from API data
+  function esc(str) {
+    return String(str ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  // Only allow https:// Instagram URLs to guard against javascript: injection
+  function safeUrl(url) {
+    try {
+      const u = new URL(url);
+      return (u.protocol === "https:" && u.hostname.endsWith("instagram.com")) ? url : "#";
+    } catch (_) { return "#"; }
+  }
+
   const logEl     = document.getElementById("logOutput");
   const badgeEl   = document.getElementById("statusBadge");
   const startBtn  = document.getElementById("startBtn");
@@ -263,18 +281,20 @@ ecommerce</textarea>
         }
         if (leadCount) leadCount.textContent = rows.length + " lead" + (rows.length !== 1 ? "s" : "");
         leadsBody.innerHTML = rows.map(r => {
-          const bioTrunc = r.bio && r.bio.length > 80 ? r.bio.slice(0, 80) + "…" : (r.bio || "—");
-          const dmUrl = "/tools/dm?bio=" + encodeURIComponent(r.bio || "");
+          const bio      = r.bio || "";
+          const bioTrunc = bio.length > 80 ? bio.slice(0, 80) + "…" : (bio || "—");
+          const dmUrl    = "/tools/dm?bio=" + encodeURIComponent(bio);
           const followers = parseInt(r.follower_count || "0").toLocaleString();
+          const profileHref = safeUrl(r.profile_url || "");
           return `<tr>
             <td class="px-3 py-2">
-              <a href="${r.profile_url}" target="_blank" rel="noopener"
-                 class="fw-semibold text-decoration-none">@${r.username}</a>
-              ${r.full_name ? `<div class="text-muted" style="font-size:.78rem">${r.full_name}</div>` : ""}
+              <a href="${profileHref}" target="_blank" rel="noopener noreferrer"
+                 class="fw-semibold text-decoration-none">@${esc(r.username)}</a>
+              ${r.full_name ? `<div class="text-muted" style="font-size:.78rem">${esc(r.full_name)}</div>` : ""}
             </td>
-            <td class="px-3 py-2">${followers}</td>
-            <td class="px-3 py-2"><span class="badge bg-secondary fw-normal">#${r.hashtag}</span></td>
-            <td class="px-3 py-2" style="max-width:280px;color:#555">${bioTrunc}</td>
+            <td class="px-3 py-2">${esc(followers)}</td>
+            <td class="px-3 py-2"><span class="badge bg-secondary fw-normal">#${esc(r.hashtag)}</span></td>
+            <td class="px-3 py-2" style="max-width:280px;color:#555">${esc(bioTrunc)}</td>
             <td class="px-3 py-2 text-end">
               <a href="${dmUrl}" class="btn btn-sm btn-outline-dark" target="_blank">Draft DM &rarr;</a>
             </td>

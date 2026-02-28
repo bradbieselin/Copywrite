@@ -83,7 +83,7 @@
             <th class="ps-4">Brief</th>
             <th>Client</th>
             <th>Type</th>
-            <th>Waiting</th>
+            <th>Submitted</th>
             <th>Status</th>
             <th></th>
           </tr>
@@ -95,7 +95,6 @@
               <td class="text-muted small">{{ b.client_name }}</td>
               <td class="text-muted small">{{ b.copy_type | capitalize }}</td>
               <td class="text-muted small">
-                {% set days = ((now|default(none)) and 0) or 0 %}
                 {{ b.created_at[:10] }}
               </td>
               <td>
@@ -231,7 +230,7 @@
           </div>
           <div class="mb-1">
             <label class="form-label fw-semibold" for="admin_password">Password</label>
-            <input type="text" class="form-control" id="admin_password" name="password"
+            <input type="password" class="form-control" id="admin_password" name="password"
                    placeholder="Minimum 8 characters" required>
           </div>
         </div>
@@ -266,7 +265,7 @@
           </div>
           <div class="mb-1">
             <label class="form-label fw-semibold" for="client_password">Password</label>
-            <input type="text" class="form-control" id="client_password" name="password"
+            <input type="password" class="form-control" id="client_password" name="password"
                    placeholder="Minimum 8 characters" required>
             <div class="form-text">Share this with the client so they can log in.</div>
           </div>
