@@ -3,11 +3,10 @@
 import logging
 import os
 import re
-import smtplib
 import threading
-from email.mime.text import MIMEText
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 
+import resend
 import db as db_module
 
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -34,14 +33,15 @@ def privacy():
     return render_template("privacy.html")
 
 
-def _send_gmail_notification(name, email, interest, message):
-    """Send contact form notification via Gmail SMTP in a background thread."""
-    gmail_user = os.environ.get("GMAIL_USER", "")
-    gmail_pass = os.environ.get("GMAIL_APP_PASSWORD", "")
-    contact_email = os.environ.get("CONTACT_EMAIL", gmail_user)
+def _send_email_notification(name, email, interest, message):
+    """Send contact form notification via Resend HTTP API in a background thread."""
+    api_key = os.environ.get("RESEND_API_KEY", "")
+    contact_email = os.environ.get("CONTACT_EMAIL", "")
 
-    if not gmail_user or not gmail_pass:
+    if not api_key or not contact_email:
         return
+
+    resend.api_key = api_key
 
     body = "\n".join([
         f"Name: {name}",
@@ -52,32 +52,20 @@ def _send_gmail_notification(name, email, interest, message):
         message or "No message provided",
     ])
 
-    msg = MIMEText(body)
-    msg["Subject"] = f"New inquiry from {name}"
-    msg["From"] = f"CopyDTC Contact Form <{gmail_user}>"
-    msg["To"] = contact_email
-    msg["Reply-To"] = email
-
     log = logging.getLogger("landing.email")
 
     def _send():
-        # Try port 587 (STARTTLS) first — more commonly allowed by cloud hosts,
-        # then fall back to port 465 (SSL).
-        for attempt, (port, use_ssl) in enumerate([(587, False), (465, True)]):
-            try:
-                if use_ssl:
-                    server = smtplib.SMTP_SSL("smtp.gmail.com", port, timeout=15)
-                else:
-                    server = smtplib.SMTP("smtp.gmail.com", port, timeout=15)
-                    server.starttls()
-                with server:
-                    server.login(gmail_user, gmail_pass)
-                    server.send_message(msg)
-                log.info("Email sent via port %d", port)
-                return
-            except Exception as exc:
-                log.warning("Port %d failed: %s", port, exc)
-        log.error("All SMTP ports failed — email not sent")
+        try:
+            resend.Emails.send({
+                "from": "CopyDTC Contact Form <contact@copydtc.com>",
+                "to": [contact_email],
+                "reply_to": email,
+                "subject": f"New inquiry from {name}",
+                "text": body,
+            })
+            log.info("Email sent via Resend")
+        except Exception as exc:
+            log.error("Resend email failed: %s", exc)
 
     threading.Thread(target=_send, daemon=True).start()
 
@@ -109,6 +97,6 @@ def contact():
     )
 
     # Fire-and-forget in background thread — never blocks the response
-    _send_gmail_notification(name, email, interest, message)
+    _send_email_notification(name, email, interest, message)
 
     return redirect(url_for("landing.index") + "?sent=1#contact")
