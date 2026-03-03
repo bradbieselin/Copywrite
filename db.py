@@ -47,12 +47,20 @@ def init_db():
 def save_contact(name: str, email: str, message: str,
                   website: str = "", services: str = "", budget: str = "") -> int:
     with sqlite3.connect(DB_PATH) as conn:
-        cur = conn.execute(
-            "INSERT INTO contact_submissions (name, email, website, services, budget, message) "
-            "VALUES (?,?,?,?,?,?)",
-            (name.strip(), email.strip(), website.strip(),
-             services.strip(), budget.strip(), message.strip()),
-        )
+        # Check which columns exist to handle pre-migration databases
+        cols = {row[1] for row in conn.execute("PRAGMA table_info(contact_submissions)").fetchall()}
+        if "services" in cols:
+            cur = conn.execute(
+                "INSERT INTO contact_submissions (name, email, website, services, budget, message) "
+                "VALUES (?,?,?,?,?,?)",
+                (name.strip(), email.strip(), website.strip(),
+                 services.strip(), budget.strip(), message.strip()),
+            )
+        else:
+            cur = conn.execute(
+                "INSERT INTO contact_submissions (name, email, message) VALUES (?,?,?)",
+                (name.strip(), email.strip(), message.strip()),
+            )
         return cur.lastrowid
 
 
