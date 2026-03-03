@@ -1,5 +1,6 @@
 """Marketing landing page — Flask Blueprint."""
 
+import logging
 import os
 import re
 import smtplib
@@ -57,13 +58,26 @@ def _send_gmail_notification(name, email, interest, message):
     msg["To"] = contact_email
     msg["Reply-To"] = email
 
+    log = logging.getLogger("landing.email")
+
     def _send():
-        try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
-                server.login(gmail_user, gmail_pass)
-                server.send_message(msg)
-        except Exception:
-            pass  # logged in the caller; fire-and-forget
+        # Try port 587 (STARTTLS) first — more commonly allowed by cloud hosts,
+        # then fall back to port 465 (SSL).
+        for attempt, (port, use_ssl) in enumerate([(587, False), (465, True)]):
+            try:
+                if use_ssl:
+                    server = smtplib.SMTP_SSL("smtp.gmail.com", port, timeout=15)
+                else:
+                    server = smtplib.SMTP("smtp.gmail.com", port, timeout=15)
+                    server.starttls()
+                with server:
+                    server.login(gmail_user, gmail_pass)
+                    server.send_message(msg)
+                log.info("Email sent via port %d", port)
+                return
+            except Exception as exc:
+                log.warning("Port %d failed: %s", port, exc)
+        log.error("All SMTP ports failed — email not sent")
 
     threading.Thread(target=_send, daemon=True).start()
 
