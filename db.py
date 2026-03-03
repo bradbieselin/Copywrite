@@ -132,7 +132,7 @@ def init_portal_db():
         for col in ("website", "services", "budget"):
             if col not in contact_cols:
                 conn.execute(
-                    f"ALTER TABLE contact_submissions ADD COLUMN {col} TEXT NOT NULL DEFAULT ''"
+                    f"ALTER TABLE contact_submissions ADD COLUMN {col} TEXT DEFAULT ''"
                 )
 
         # Migrate: add `draft` column to briefs for existing databases.
