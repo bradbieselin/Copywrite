@@ -52,6 +52,7 @@ def create_app() -> Flask:
     # Landing page
     from landing import landing_bp
     app.register_blueprint(landing_bp)
+    _csrf.exempt("landing.contact")  # public contact form — protected by honeypot
 
     # Admin-only tools
     from dm import dm_bp
