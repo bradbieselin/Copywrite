@@ -1,1235 +1,1200 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CopyDTC — DTC Copywriter for Brands That Want to Scale</title>
-  <meta name="description" content="Email sequences, paid ads, and landing pages for DTC brands. Brad Bieselin writes copy that drives real revenue — not just opens and clicks." />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://copydtc.com/" />
-
-  <!-- Open Graph -->
-  <meta property="og:type"        content="website" />
-  <meta property="og:url"         content="https://copydtc.com/" />
-  <meta property="og:title"       content="CopyDTC — DTC Copywriter for Brands That Want to Scale" />
-  <meta property="og:description" content="Email sequences, paid ads, and landing pages that turn browsers into buyers. 40+ DTC brands. $3M+ in attributable revenue." />
-  <meta property="og:image"       content="https://copydtc.com/static/images/headshot1.jpg" />
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card"        content="summary_large_image" />
-  <meta name="twitter:title"       content="CopyDTC — DTC Copywriter for Brands That Want to Scale" />
-  <meta name="twitter:description" content="Email sequences, paid ads, and landing pages for DTC brands. 40+ brands. $3M+ in attributable revenue." />
-
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --indigo:   #5b5bf8;
-      --indigo-d: #4a4ae0;
-      --indigo-l: #ededff;
-      --dark:     #0f0f1e;
-      --dark-2:   #1a1a2e;
-      --text:     #1a1a1a;
-      --muted:    #555;
-      --border:   #c8c8e0;
-      --bg:       #E8E8F5;
-      --bg-tint:  #F2F2FA;
-      --green:    #22c55e;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: var(--text);
-      background: var(--bg);
-      line-height: 1.6;
-    }
-
-    /* ── NAV ── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(232,232,245,0.97);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .nav-logo {
-      font-size: 1rem;
-      font-weight: 800;
-      color: var(--text);
-      text-decoration: none;
-      letter-spacing: -.02em;
-    }
-
-    .nav-logo span { color: var(--indigo); }
-
-    .nav-links {
-      display: flex;
-      align-items: center;
-      gap: 1.75rem;
-      list-style: none;
-    }
-
-    .nav-links a {
-      font-size: .875rem;
-      font-weight: 500;
-      color: var(--muted);
-      text-decoration: none;
-      transition: color .15s;
-    }
-
-    .nav-links a:hover { color: var(--text); }
-
-    .btn-login {
-      font-size: .875rem;
-      font-weight: 600;
-      color: var(--indigo) !important;
-      border: 1.5px solid var(--indigo);
-      border-radius: 6px;
-      padding: .35rem .9rem;
-      transition: background .15s, color .15s !important;
-    }
-
-    .btn-login:hover {
-      background: var(--indigo) !important;
-      color: #fff !important;
-    }
-
-    /* ── HERO ── */
-    .hero {
-      background: var(--dark);
-      color: #fff;
-      padding: 7rem 2rem 6rem;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: '';
-      position: absolute;
-      top: -120px; left: 50%;
-      transform: translateX(-50%);
-      width: 700px; height: 700px;
-      background: radial-gradient(circle, rgba(91,91,248,.18) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    .hero-eyebrow {
-      display: inline-block;
-      font-size: .8rem;
-      font-weight: 700;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--indigo);
-      background: rgba(91,91,248,.15);
-      border: 1px solid rgba(91,91,248,.3);
-      border-radius: 999px;
-      padding: .3rem .9rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .hero h1 {
-      font-size: clamp(2.5rem, 6vw, 4.75rem);
-      font-weight: 800;
-      letter-spacing: -.03em;
-      line-height: 1.08;
-      margin-bottom: 1.25rem;
-    }
-
-    .hero h1 span { color: var(--indigo); }
-
-    .hero-sub {
-      font-size: 1.15rem;
-      color: rgba(255,255,255,.82);
-      max-width: 520px;
-      margin: 0 auto 2.5rem;
-      line-height: 1.65;
-    }
-
-    .hero-cta-group {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 3rem;
-    }
-
-    .hero-cta {
-      display: inline-block;
-      background: var(--indigo);
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 700;
-      padding: .9rem 2.25rem;
-      border-radius: 8px;
-      text-decoration: none;
-      transition: background .15s, transform .1s;
-    }
-
-    .hero-cta:hover { background: var(--indigo-d); }
-    .hero-cta:active { transform: scale(.98); }
-
-    .hero-cta-secondary {
-      display: inline-block;
-      color: rgba(255,255,255,.88);
-      font-size: 1rem;
-      font-weight: 500;
-      padding: .9rem 1.75rem;
-      border-radius: 8px;
-      text-decoration: none;
-      border: 1.5px solid rgba(255,255,255,.38);
-      transition: border-color .15s, color .15s;
-    }
-
-    .hero-cta-secondary:hover { color: #fff; border-color: rgba(255,255,255,.65); }
-
-    /* ── TRUST STRIP ── */
-    .trust-strip {
-      background: rgba(255,255,255,.05);
-      border-top: 1px solid rgba(255,255,255,.08);
-      border-bottom: 1px solid rgba(255,255,255,.08);
-      padding: 1.75rem 2rem;
-    }
-
-    .trust-strip-inner {
-      max-width: 1040px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      text-align: center;
-    }
-
-    .trust-stat-num {
-      display: block;
-      font-size: 1.75rem;
-      font-weight: 800;
-      color: #fff;
-      letter-spacing: -.02em;
-      line-height: 1;
-      margin-bottom: .3rem;
-    }
-
-    .trust-stat-label {
-      font-size: .8rem;
-      color: rgba(255,255,255,.72);
-      text-transform: uppercase;
-      letter-spacing: .07em;
-      font-weight: 600;
-    }
-
-    /* ── SECTIONS SHARED ── */
-    section { padding: 5rem 2rem; }
-
-    .container {
-      max-width: 1040px;
-      margin: 0 auto;
-    }
-
-    .section-label {
-      font-size: .78rem;
-      font-weight: 700;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--indigo);
-      margin-bottom: .6rem;
-    }
-
-    .section-title {
-      font-size: clamp(1.75rem, 4vw, 2.5rem);
-      font-weight: 800;
-      letter-spacing: -.025em;
-      line-height: 1.15;
-      margin-bottom: 1rem;
-    }
-
-    .section-sub {
-      font-size: 1.05rem;
-      color: var(--muted);
-      max-width: 560px;
-      margin-bottom: 3rem;
-      line-height: 1.65;
-    }
-
-    /* ── SERVICES ── */
-    #services { background: var(--bg); }
-
-    .services-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-      gap: 1.25rem;
-    }
-
-    .service-card {
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 1.75rem;
-      transition: border-color .2s, box-shadow .2s, transform .15s;
-      background: var(--bg-tint);
-    }
-
-    .service-card:hover {
-      border-color: var(--indigo);
-      box-shadow: 0 6px 28px rgba(91,91,248,.1);
-      transform: translateY(-2px);
-    }
-
-    .service-icon {
-      font-size: 1.65rem;
-      margin-bottom: .9rem;
-    }
-
-    .service-card h3 {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: .45rem;
-      letter-spacing: -.01em;
-    }
-
-    .service-card p {
-      font-size: .875rem;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    /* ── PORTFOLIO ── */
-    #portfolio { background: var(--dark); }
-    #portfolio .section-title { color: #fff; }
-    #portfolio .section-sub   { color: rgba(255,255,255,.72); }
-
-    .portfolio-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .portfolio-card {
-      background: var(--dark-2);
-      border: 1.5px solid rgba(255,255,255,.1);
-      border-radius: 16px;
-      overflow: hidden;
-      transition: box-shadow .2s, transform .15s;
-    }
-
-    .portfolio-card:hover {
-      box-shadow: 0 8px 32px rgba(91,91,248,.15);
-      transform: translateY(-3px);
-    }
-
-    .portfolio-card-preview {
-      background: var(--dark-2);
-      padding: 1.5rem 1.75rem;
-      position: relative;
-      min-height: 130px;
-    }
-
-    .portfolio-card-tag {
-      display: inline-block;
-      font-size: .72rem;
-      font-weight: 700;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      background: rgba(91,91,248,.25);
-      color: #a9a9ff;
-      border-radius: 4px;
-      padding: .2rem .55rem;
-      margin-bottom: .75rem;
-    }
-
-    .portfolio-card-preview p {
-      font-size: .88rem;
-      color: rgba(255,255,255,.7);
-      font-family: ui-monospace, "SF Mono", Menlo, monospace;
-      line-height: 1.55;
-    }
-
-    .portfolio-card-preview .preview-fade {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 40px;
-      background: linear-gradient(transparent, var(--dark-2));
-    }
-
-    .portfolio-card-body {
-      padding: 1.25rem 1.75rem 1.5rem;
-    }
-
-    .portfolio-card-body h3 {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: .3rem;
-      letter-spacing: -.01em;
-      color: #fff;
-    }
-
-    .portfolio-card-body .card-sub {
-      font-size: .83rem;
-      color: rgba(255,255,255,.55);
-      margin-bottom: 1rem;
-    }
-
-    .portfolio-results {
-      display: flex;
-      gap: 1.25rem;
-      flex-wrap: wrap;
-      border-top: 1px solid rgba(255,255,255,.1);
-      padding-top: .9rem;
-      margin-top: .25rem;
-    }
-
-    .portfolio-result {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .portfolio-result .res-num {
-      font-size: 1.1rem;
-      font-weight: 800;
-      color: var(--indigo);
-      letter-spacing: -.02em;
-      line-height: 1;
-    }
-
-    .portfolio-result .res-label {
-      font-size: .73rem;
-      color: rgba(255,255,255,.52);
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      font-weight: 600;
-    }
-
-    /* ── REVIEWS ── */
-    #reviews { background: var(--dark); }
-    #reviews .section-title { color: #fff; }
-    #reviews .section-sub   { color: rgba(255,255,255,.72); }
-
-    .reviews-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
-      gap: 1.5rem;
-    }
-
-    .review-card {
-      border: 1.5px solid rgba(255,255,255,.1);
-      border-radius: 16px;
-      padding: 1.75rem;
-      background: var(--dark-2);
-      transition: box-shadow .2s, transform .15s;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .review-card:hover {
-      box-shadow: 0 6px 28px rgba(91,91,248,.15);
-      transform: translateY(-2px);
-    }
-
-    .stars {
-      font-size: 1rem;
-      color: #f59e0b;
-      letter-spacing: .1em;
-      margin-bottom: .9rem;
-    }
-
-    .review-text {
-      font-size: .95rem;
-      color: rgba(255,255,255,.82);
-      line-height: 1.7;
-      flex: 1;
-      margin-bottom: 1.25rem;
-    }
-
-    .reviewer {
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-      border-top: 1px solid rgba(255,255,255,.1);
-      padding-top: 1rem;
-    }
-
-    .reviewer-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: rgba(91,91,248,.3);
-      color: #a9a9ff;
-      font-size: .85rem;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .reviewer-name {
-      font-size: .88rem;
-      font-weight: 700;
-      color: #fff;
-      line-height: 1.2;
-    }
-
-    .reviewer-role {
-      font-size: .78rem;
-      color: rgba(255,255,255,.52);
-    }
-
-    /* ── PROCESS ── */
-    #process { background: var(--bg); }  /* #F4F4F4 */
-
-    .process-steps {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 2rem;
-      counter-reset: step;
-    }
-
-    .process-step {
-      counter-increment: step;
-      position: relative;
-    }
-
-    .step-num {
-      font-size: 3rem;
-      font-weight: 800;
-      color: var(--indigo);
-      letter-spacing: -.04em;
-      line-height: 1;
-      margin-bottom: .75rem;
-    }
-
-    .process-step h3 {
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: .4rem;
-    }
-
-    .process-step p {
-      font-size: .9rem;
-      color: var(--muted);
-      line-height: 1.6;
-    }
-
-    /* ── CONTACT ── */
-    #contact { background: var(--bg); color: var(--text); }
-
-    #contact .section-title { color: var(--text); }
-    #contact .section-sub   { color: var(--muted); }
-    #contact .section-label { color: var(--indigo); }
-
-    #contact .section-label,
-    #contact .section-title,
-    #contact .section-sub {
-      max-width: 560px;
-      margin-left: auto;
-      margin-right: auto;
-      text-align: center;
-    }
-
-    .availability-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: .45rem;
-      background: rgba(34,197,94,.1);
-      border: 1px solid rgba(34,197,94,.35);
-      border-radius: 999px;
-      color: #15803d;
-      font-size: .78rem;
-      font-weight: 700;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      padding: .3rem .85rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .availability-dot {
-      width: 7px; height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      display: inline-block;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50%       { opacity: .4; }
-    }
-
-    .contact-layout {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .contact-left h3 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 1rem;
-    }
-
-    .contact-expect {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: .65rem;
-    }
-
-    .contact-expect li {
-      display: flex;
-      align-items: flex-start;
-      gap: .6rem;
-      font-size: .9rem;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .contact-expect li::before {
-      content: '✓';
-      color: var(--green);
-      font-weight: 700;
-      font-size: .9rem;
-      flex-shrink: 0;
-      margin-top: .05rem;
-    }
-
-    .contact-card {
-      background: var(--bg-tint);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-    }
-
-    .sent-msg {
-      background: rgba(91,91,248,.08);
-      border: 1px solid rgba(91,91,248,.3);
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      color: var(--indigo);
-      font-size: .95rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .flash-error {
-      background: rgba(200,0,0,.07);
-      border: 1px solid rgba(200,0,0,.25);
-      border-radius: 8px;
-      padding: 1rem 1.25rem;
-      color: #dc2626;
-      font-size: .95rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .form-field { margin-bottom: 1.1rem; }
-
-    .form-field label {
-      display: block;
-      font-size: .82rem;
-      font-weight: 600;
-      margin-bottom: .35rem;
-      color: var(--text);
-    }
-
-    .form-field input,
-    .form-field textarea {
-      width: 100%;
-      background: var(--bg);
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      padding: .72rem 1rem;
-      font-size: .93rem;
-      font-family: inherit;
-      color: var(--text);
-      transition: border-color .15s;
-      resize: vertical;
-    }
-
-    .form-field input::placeholder,
-    .form-field textarea::placeholder { color: var(--muted); }
-
-    .form-field input:focus,
-    .form-field textarea:focus {
-      outline: none;
-      border-color: var(--indigo);
-    }
-
-    /* Honeypot field — visually hidden from humans */
-    .hp-field {
-      position: absolute;
-      left: -9999px;
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .btn-submit {
-      width: 100%;
-      padding: .875rem;
-      background: var(--indigo);
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: .95rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background .15s, transform .1s;
-      margin-top: .35rem;
-      letter-spacing: -.01em;
-    }
-
-    .btn-submit:hover  { background: var(--indigo-d); }
-    .btn-submit:active { transform: scale(.98); }
-
-    /* ── FOOTER ── */
-    footer {
-      background: var(--dark);
-      border-top: 1px solid rgba(255,255,255,.10);
-      padding: 2rem;
-      color: rgba(255,255,255,.60);
-      font-size: .85rem;
-    }
-
-    .footer-inner {
-      max-width: 1040px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: .75rem;
-    }
-
-    footer a {
-      color: rgba(255,255,255,.70);
-      text-decoration: none;
-      margin-left: 1.25rem;
-      transition: color .15s;
-    }
-
-    footer a:hover { color: #fff; }
-
-    /* ── HAMBURGER + MOBILE NAV ── */
-    .nav-mobile-right { display: none; }
-
-    .hamburger {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: .35rem;
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      border-radius: 4px;
-    }
-
-    .hamburger span {
-      display: block;
-      width: 22px;
-      height: 2px;
-      background: var(--text);
-      border-radius: 2px;
-      transition: transform .25s ease, opacity .25s ease;
-    }
-
-    .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-    .hamburger.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-    .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-    .mobile-menu {
-      display: none;
-      position: fixed;
-      top: 60px;
-      left: 0;
-      right: 0;
-      background: rgba(232,232,245,.98);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 8px 24px rgba(0,0,0,.08);
-      z-index: 99;
-    }
-
-    .mobile-menu.open { display: block; }
-
-    .mobile-menu ul {
-      list-style: none;
-      padding: .5rem 0 .75rem;
-    }
-
-    .mobile-menu ul li a {
-      display: block;
-      padding: .875rem 1.5rem;
-      font-size: .95rem;
-      font-weight: 500;
-      color: var(--text);
-      text-decoration: none;
-      border-bottom: 1px solid var(--border);
-      transition: color .15s, background .15s;
-    }
-
-    .mobile-menu ul li:last-child a { border-bottom: none; }
-    .mobile-menu ul li a:hover { color: var(--indigo); background: #f8f8ff; }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 767px) {
-      nav { padding: 0 1rem; }
-      /* Higher specificity (0-1-1) beats the base .nav-links rule (0-1-0) */
-      nav .nav-links { display: none; }
-      nav .nav-mobile-right {
-        display: flex;
-        align-items: center;
-        gap: .6rem;
-      }
-      section { padding: 3.5rem 1.25rem; }
-      .hero { padding: 5rem 1.25rem 0; }
-      .trust-strip { padding: 1.5rem 1.25rem; }
-      .trust-strip-inner { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
-      .contact-layout { grid-template-columns: 1fr; gap: 2rem; }
-      .contact-card { padding: 1.5rem 1.25rem; }
-      .hero-cta-group { flex-direction: column; align-items: center; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CopyDTC — AI-powered content engine for DTC brands. Emails, ads, landing pages, SEO content, SMS, and more. Delivered in days, not weeks.">
+    <meta property="og:title" content="CopyDTC — Content Engine for DTC Brands">
+    <meta property="og:description" content="We build AI-powered content engines for direct-to-consumer brands. Better emails, sharper ads, landing pages that convert. All delivered faster than any traditional agency.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://copydtc.com">
+    <meta property="og:image" content="https://copydtc.com/static/images/headshot1.jpg">
+    <title>CopyDTC — Content Engine for DTC Brands That Want to Scale</title>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --purple: #5B5BF8;
+            --purple-hover: #4A4AD6;
+            --dark: #0F0F1E;
+            --dark2: #1A1A2E;
+            --dark3: #242442;
+            --light: #E8E8F5;
+            --light2: #F0F0FA;
+            --gray: #9090A8;
+            --white: #FFFFFF;
+            --font: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font);
+            color: var(--dark);
+            line-height: 1.6;
+            background: var(--light);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; display: block; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            background: rgba(15, 15, 30, 0.95);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(91, 91, 248, 0.15);
+            padding: 16px 0;
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--white);
+        }
+
+        .logo span { color: var(--purple); }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--gray);
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: var(--white); }
+
+        .nav-cta {
+            border: 1px solid var(--purple);
+            color: var(--purple) !important;
+            padding: 8px 20px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav-cta:hover {
+            background: var(--purple);
+            color: var(--white) !important;
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .nav-toggle span {
+            display: block;
+            width: 24px;
+            height: 2px;
+            background: var(--white);
+            margin: 6px 0;
+            transition: 0.3s;
+        }
+
+        /* HERO */
+        .hero {
+            background: var(--dark);
+            padding: 160px 0 100px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: 50%;
+            transform: translateX(-50%);
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(91, 91, 248, 0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border: 1px solid var(--purple);
+            border-radius: 100px;
+            color: var(--purple);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 32px;
+        }
+
+        .hero h1 {
+            font-size: clamp(42px, 6vw, 80px);
+            font-weight: 800;
+            color: var(--white);
+            line-height: 1.05;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 em {
+            color: var(--purple);
+            font-style: normal;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--gray);
+            max-width: 560px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: var(--purple);
+            color: var(--white);
+            padding: 16px 36px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: var(--purple-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--white);
+            padding: 16px 36px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover { border-color: var(--white); }
+
+        /* STATS */
+        .stats {
+            background: var(--dark2);
+            padding: 48px 0;
+            border-top: 1px solid rgba(91, 91, 248, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 40px;
+            font-weight: 800;
+            color: var(--white);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--gray);
+            margin-top: 4px;
+        }
+
+        /* SECTIONS */
+        .section { padding: 100px 0; }
+        .section-dark { background: var(--dark); color: var(--white); }
+
+        .section-label {
+            color: var(--purple);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(32px, 4vw, 48px);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            font-size: 17px;
+            color: var(--gray);
+            max-width: 640px;
+            line-height: 1.7;
+            margin-bottom: 48px;
+        }
+
+        /* AUDIT BANNER */
+        .audit-banner {
+            background: linear-gradient(135deg, var(--dark2) 0%, var(--dark3) 100%);
+            border: 1px solid rgba(91, 91, 248, 0.2);
+            border-radius: 16px;
+            padding: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 32px;
+            margin-top: -50px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .audit-banner h3 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+
+        .audit-banner p {
+            color: var(--gray);
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .audit-banner .btn-primary { white-space: nowrap; flex-shrink: 0; }
+
+        /* SERVICES */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .service-card {
+            background: var(--white);
+            border: 1px solid rgba(91, 91, 248, 0.1);
+            border-radius: 16px;
+            padding: 32px 28px;
+            transition: all 0.2s;
+        }
+
+        .service-card:hover {
+            border-color: var(--purple);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(91, 91, 248, 0.08);
+        }
+
+        .service-icon { font-size: 32px; margin-bottom: 16px; }
+        .service-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+        .service-card p { font-size: 14px; color: #666; line-height: 1.6; }
+
+        /* PORTFOLIO */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .portfolio-card {
+            background: var(--dark2);
+            border: 1px solid rgba(91, 91, 248, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            transition: border-color 0.2s;
+        }
+
+        .portfolio-card:hover { border-color: var(--purple); }
+
+        .portfolio-tag {
+            display: inline-block;
+            padding: 6px 14px;
+            background: var(--dark3);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--purple);
+            margin-bottom: 20px;
+        }
+
+        .portfolio-preview {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: var(--gray);
+            line-height: 1.7;
+            margin-bottom: 24px;
+            min-height: 120px;
+        }
+
+        .portfolio-title { font-size: 17px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+        .portfolio-client { font-size: 13px; color: var(--gray); margin-bottom: 20px; }
+
+        .portfolio-stats { display: flex; gap: 24px; flex-wrap: wrap; }
+        .portfolio-stat-value { font-size: 22px; font-weight: 800; color: var(--purple); }
+        .portfolio-stat-label { font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--gray); }
+
+        .portfolio-revenue { margin-top: 16px; }
+        .portfolio-revenue .portfolio-stat-value { font-size: 18px; }
+
+        /* PRICING */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .pricing-card {
+            background: var(--white);
+            border: 1px solid rgba(91, 91, 248, 0.1);
+            border-radius: 16px;
+            padding: 40px 32px;
+            position: relative;
+            transition: all 0.2s;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(91, 91, 248, 0.08);
+        }
+
+        .pricing-card.featured {
+            border: 2px solid var(--purple);
+            box-shadow: 0 8px 32px rgba(91, 91, 248, 0.12);
+        }
+
+        .pricing-popular {
+            position: absolute;
+            top: -14px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--purple);
+            color: var(--white);
+            padding: 6px 20px;
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .pricing-tier { font-size: 14px; font-weight: 600; color: var(--purple); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; }
+        .pricing-price { font-size: 48px; font-weight: 800; margin-bottom: 4px; }
+        .pricing-price span { font-size: 16px; font-weight: 500; color: var(--gray); }
+        .pricing-desc { font-size: 15px; color: var(--gray); margin-bottom: 28px; line-height: 1.5; }
+
+        .pricing-features { list-style: none; margin-bottom: 32px; }
+        .pricing-features li {
+            font-size: 14px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #444;
+        }
+        .pricing-features li::before { content: '\2713'; color: var(--purple); font-weight: 700; flex-shrink: 0; }
+
+        .pricing-btn {
+            display: block;
+            width: 100%;
+            text-align: center;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .pricing-btn-primary { background: var(--purple); color: var(--white); border: none; }
+        .pricing-btn-primary:hover { background: var(--purple-hover); }
+        .pricing-btn-outline { background: transparent; color: var(--purple); border: 1px solid var(--purple); }
+        .pricing-btn-outline:hover { background: var(--purple); color: var(--white); }
+
+        /* PROCESS */
+        .process-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 32px;
+        }
+
+        .process-step { text-align: center; }
+        .process-number { font-size: 56px; font-weight: 800; color: var(--purple); line-height: 1; margin-bottom: 16px; }
+        .process-step h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+        .process-step p { font-size: 14px; color: #666; line-height: 1.6; }
+
+        /* REVIEWS */
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .review-card {
+            background: var(--dark2);
+            border: 1px solid rgba(91, 91, 248, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+        }
+
+        .review-stars { color: #FFA800; font-size: 18px; margin-bottom: 16px; }
+        .review-text { font-size: 15px; color: var(--gray); line-height: 1.7; margin-bottom: 24px; }
+
+        .review-author { display: flex; align-items: center; gap: 12px; }
+        .review-avatar {
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            background: var(--dark3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--purple);
+        }
+        .review-name { font-size: 15px; font-weight: 600; color: var(--white); }
+        .review-role { font-size: 13px; color: var(--gray); }
+
+        /* ABOUT */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+        }
+
+        .about-text h2 { font-size: clamp(32px, 4vw, 42px); font-weight: 800; margin-bottom: 24px; }
+        .about-text p { font-size: 16px; line-height: 1.8; color: #555; margin-bottom: 16px; }
+
+        .about-highlights { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .about-highlight {
+            background: var(--white);
+            border: 1px solid rgba(91,91,248,0.1);
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .about-highlight-number { font-size: 32px; font-weight: 800; color: var(--purple); }
+        .about-highlight-label { font-size: 14px; color: #666; margin-top: 4px; }
+
+        /* FAQ */
+        .faq-grid { max-width: 800px; margin: 0 auto; }
+        .faq-item { border-bottom: 1px solid rgba(91, 91, 248, 0.1); padding: 24px 0; }
+
+        .faq-question {
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--white);
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 24px;
+            color: var(--purple);
+            font-weight: 400;
+            transition: transform 0.2s;
+        }
+
+        .faq-item.open .faq-question::after { transform: rotate(45deg); }
+
+        .faq-answer {
+            font-size: 15px;
+            color: var(--gray);
+            line-height: 1.7;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .faq-item.open .faq-answer { max-height: 300px; padding-top: 16px; }
+
+        /* CONTACT */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: start;
+        }
+
+        .contact-expect h3 { font-size: 20px; font-weight: 700; margin-bottom: 24px; }
+        .contact-expect li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            color: #555;
+            margin-bottom: 16px;
+        }
+        .check-icon { color: #22C55E; font-size: 18px; flex-shrink: 0; }
+
+        .contact-form {
+            background: var(--white);
+            border: 1px solid rgba(91,91,248,0.1);
+            border-radius: 16px;
+            padding: 36px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: var(--font);
+            background: #fafafe;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--purple);
+        }
+
+        .form-group textarea { resize: vertical; min-height: 120px; }
+
+        .form-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--purple);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .form-submit:hover { background: var(--purple-hover); }
+
+        /* Honeypot */
+        .hp-field {
+            position: absolute;
+            left: -9999px;
+            width: 1px; height: 1px;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sent-msg {
+            background: rgba(91,91,248,.08);
+            border: 1px solid rgba(91,91,248,.3);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            color: var(--purple);
+            font-size: .95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .flash-error {
+            background: rgba(200,0,0,.07);
+            border: 1px solid rgba(200,0,0,.25);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            color: #dc2626;
+            font-size: .95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* AVAILABILITY */
+        .availability-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 100px;
+            margin-bottom: 24px;
+        }
+
+        .availability-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #22C55E;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .availability-badge span {
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #22C55E;
+        }
+
+        /* FOOTER */
+        footer {
+            background: var(--dark);
+            padding: 40px 0;
+            border-top: 1px solid rgba(91,91,248,0.1);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-copy { font-size: 14px; color: var(--gray); }
+
+        .footer-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+        }
+
+        .footer-links a {
+            font-size: 14px;
+            color: var(--gray);
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--white); }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .services-grid { grid-template-columns: repeat(2, 1fr); }
+            .pricing-grid { grid-template-columns: 1fr; max-width: 480px; margin: 0 auto; }
+            .process-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-toggle { display: block; }
+
+            .nav-links.open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%; left: 0; right: 0;
+                background: var(--dark);
+                padding: 24px;
+                border-bottom: 1px solid rgba(91,91,248,0.15);
+            }
+
+            .hero { padding: 120px 0 80px; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+            .services-grid { grid-template-columns: 1fr; }
+            .portfolio-grid { grid-template-columns: 1fr; }
+            .reviews-grid { grid-template-columns: 1fr; }
+            .process-grid { grid-template-columns: 1fr; }
+            .about-content { grid-template-columns: 1fr; gap: 32px; }
+            .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+            .audit-banner { flex-direction: column; text-align: center; padding: 32px; }
+            .footer-content { flex-direction: column; gap: 16px; text-align: center; }
+        }
+    </style>
 </head>
 <body>
 
-  <!-- ── NAV ── -->
-  <nav>
-    <a href="/" class="nav-logo">Copy<span>DTC</span></a>
+    <!-- NAV -->
+    <nav>
+        <div class="container">
+            <a href="/" class="logo">Copy<span>DTC</span></a>
+            <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+            <ul class="nav-links">
+                <li><a href="#services">Services</a></li>
+                <li><a href="#work">Work</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#process">Process</a></li>
+                <li><a href="#reviews">Reviews</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="/portal/login" class="nav-cta">Login</a></li>
+            </ul>
+        </div>
+    </nav>
 
-    <ul class="nav-links">
-      <li><a href="#services">Services</a></li>
-      <li><a href="#portfolio">Work</a></li>
-      <li><a href="#process">Process</a></li>
-      <li><a href="#reviews">Reviews</a></li>
-      <li><a href="/about">About</a></li>
-      <li><a href="#contact">Contact</a></li>
-      <li><a href="/portal/login" class="btn-login">Login</a></li>
-    </ul>
-
-    <div class="nav-mobile-right">
-      <a href="/portal/login" class="btn-login">Login</a>
-      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </nav>
-
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
-    <ul>
-      <li><a href="#services">Services</a></li>
-      <li><a href="#portfolio">Work</a></li>
-      <li><a href="#process">Process</a></li>
-      <li><a href="#reviews">Reviews</a></li>
-      <li><a href="/about">About</a></li>
-      <li><a href="#contact">Contact</a></li>
-    </ul>
-  </div>
-
-  <!-- ── HERO ── -->
-  <section class="hero">
-    <div class="hero-eyebrow">DTC Copywriter</div>
-    <h1>Copywrite That <span>Actually Sells.</span></h1>
-    <p class="hero-sub">
-      I write emails, ads, and landing pages for DTC brands that are done
-      blending in and ready to see what the right words actually do to revenue.
-    </p>
-    <div class="hero-cta-group">
-      <a href="#contact" class="hero-cta">Work With Me</a>
-      <a href="#portfolio" class="hero-cta-secondary">See My Work</a>
-    </div>
-
-    <!-- Trust strip inside hero section -->
-    <div class="trust-strip">
-      <div class="trust-strip-inner">
-        <div>
-          <span class="trust-stat-num">40+</span>
-          <span class="trust-stat-label">DTC Brands</span>
-        </div>
-        <div>
-          <span class="trust-stat-num">$3M+</span>
-          <span class="trust-stat-label">Attributable Revenue</span>
-        </div>
-        <div>
-          <span class="trust-stat-num">4.8×</span>
-          <span class="trust-stat-label">Avg. ROAS Lift</span>
-        </div>
-        <div>
-          <span class="trust-stat-num">48hr</span>
-          <span class="trust-stat-label">Rush Available</span>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── SERVICES ── -->
-  <section id="services">
-    <div class="container">
-      <div class="section-label">What I Do</div>
-      <h2 class="section-title">Copy for every stage<br>of your funnel.</h2>
-      <p class="section-sub">
-        From the first impression to the win-back — conversion-focused copy
-        built specifically for DTC brands that want to grow.
-      </p>
-      <div class="services-grid">
-        <div class="service-card">
-          <div class="service-icon">✉️</div>
-          <h3>Email Sequences</h3>
-          <p>Welcome, abandoned cart, post-purchase, and win-back flows strategically sequenced to turn subscribers into repeat buyers.</p>
-        </div>
-        <div class="service-card">
-          <div class="service-icon">📣</div>
-          <h3>Paid Ad Copy</h3>
-          <p>Facebook, Instagram, and Google ads written around scroll-stopping hooks — and copy that actually closes once they click.</p>
-        </div>
-        <div class="service-card">
-          <div class="service-icon">🎯</div>
-          <h3>Landing Pages</h3>
-          <p>Sales and product pages built around real customer objections and desires — not features your buyer doesn't care about.</p>
-        </div>
-        <div class="service-card">
-          <div class="service-icon">📱</div>
-          <h3>Social Media Copy</h3>
-          <p>Instagram captions, cold DM scripts, and organic post copy that builds an audience while quietly driving clicks.</p>
-        </div>
-        <div class="service-card">
-          <div class="service-icon">🔊</div>
-          <h3>Brand Voice</h3>
-          <p>A messaging framework so every writer, channel, and campaign sounds like one brand — distinct, consistent, and worth listening to.</p>
-        </div>
-        <div class="service-card">
-          <div class="service-icon">🎬</div>
-          <h3>UGC &amp; Video Scripts</h3>
-          <p>TikTok, Reels, and UGC ad scripts engineered to hook in the first 3 seconds and keep viewers watching long enough to convert.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── PORTFOLIO ── -->
-  <section id="portfolio">
-    <div class="container">
-      <div class="section-label">Recent Work</div>
-      <h2 class="section-title">Results from real brands.</h2>
-      <p class="section-sub">
-        A sample of recent projects — the copy, the context, and the numbers that came after.
-      </p>
-      <div class="portfolio-grid">
-
-        <div class="portfolio-card">
-          <div class="portfolio-card-preview">
-            <div class="portfolio-card-tag">Email Sequence</div>
-            <p>Subject: "You left something behind (and it's selling fast)"<br><br>
-            Hey [Name], we noticed you were checking out our [Product] — totally understand if timing wasn't right. But here's the thing: we're almost out of stock on the shade you had in your cart...</p>
-            <div class="preview-fade"></div>
-          </div>
-          <div class="portfolio-card-body">
-            <h3>5-Email Abandoned Cart Flow</h3>
-            <p class="card-sub">Wellness CPG Brand &mdash; 2024</p>
-            <div class="portfolio-results">
-              <div class="portfolio-result">
-                <span class="res-num">54%</span>
-                <span class="res-label">Open Rate</span>
-              </div>
-              <div class="portfolio-result">
-                <span class="res-num">19%</span>
-                <span class="res-label">Recovery Rate</span>
-              </div>
-              <div class="portfolio-result">
-                <span class="res-num">$31K</span>
-                <span class="res-label">60-Day Revenue</span>
-              </div>
+    <!-- HERO -->
+    <section class="hero" id="hero">
+        <div class="container">
+            <div class="hero-badge">DTC Content Engine</div>
+            <h1>Copy That <em>Actually Sells.</em></h1>
+            <p>We build content engines for DTC brands. Emails, ads, landing pages, SEO content, product copy, and more. Delivered in days, not weeks. Powered by systems that scale with you.</p>
+            <div class="hero-buttons">
+                <a href="#contact" class="btn-primary">Get a Free Content Audit</a>
+                <a href="#work" class="btn-secondary">See Our Work</a>
             </div>
-          </div>
         </div>
+    </section>
 
-        <div class="portfolio-card">
-          <div class="portfolio-card-preview">
-            <div class="portfolio-card-tag">Paid Ads</div>
-            <p>Hook: "Your protein shake is lying to you."<br><br>
-            Most supplements are 80% filler, 20% marketing. We went the other way. Every scoop of [Product] is third-party tested, zero proprietary blends, and hits within 22 minutes. Here's what that looks like...</p>
-            <div class="preview-fade"></div>
-          </div>
-          <div class="portfolio-card-body">
-            <h3>Meta Ad Creative Suite</h3>
-            <p class="card-sub">Sports Nutrition Brand &mdash; 2024</p>
-            <div class="portfolio-results">
-              <div class="portfolio-result">
-                <span class="res-num">4.4×</span>
-                <span class="res-label">ROAS (from 2.1×)</span>
-              </div>
-              <div class="portfolio-result">
-                <span class="res-num">6</span>
-                <span class="res-label">Ad Variations</span>
-              </div>
-              <div class="portfolio-result">
-                <span class="res-num">$45K</span>
-                <span class="res-label">Monthly Scale</span>
-              </div>
+    <!-- STATS -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div><div class="stat-number">40+</div><div class="stat-label">DTC Brands</div></div>
+                <div><div class="stat-number">$3M+</div><div class="stat-label">Attributable Revenue</div></div>
+                <div><div class="stat-number">4.8x</div><div class="stat-label">Avg. ROAS Lift</div></div>
+                <div><div class="stat-number">48hr</div><div class="stat-label">Rush Available</div></div>
             </div>
-          </div>
         </div>
+    </section>
 
-        <div class="portfolio-card">
-          <div class="portfolio-card-preview">
-            <div class="portfolio-card-tag">Landing Page</div>
-            <p>Headline: "Clothes that last longer than the trend cycle."<br><br>
-            We didn't set out to build a fashion brand. We set out to build something better than the alternative — pieces you wear for years, not seasons. That starts with how we source every thread...</p>
-            <div class="preview-fade"></div>
-          </div>
-          <div class="portfolio-card-body">
-            <h3>Full Sales Page Rewrite</h3>
-            <p class="card-sub">Sustainable Apparel Brand &mdash; 2024</p>
-            <div class="portfolio-results">
-              <div class="portfolio-result">
-                <span class="res-num">3.9%</span>
-                <span class="res-label">CVR (from 1.4%)</span>
-              </div>
-              <div class="portfolio-result">
-                <span class="res-num">+$18K</span>
-                <span class="res-label">Monthly Revenue</span>
-              </div>
-              <div class="portfolio-result">
-                <span class="res-num">Same</span>
-                <span class="res-label">Ad Spend</span>
-              </div>
+    <!-- AUDIT BANNER -->
+    <section class="section" style="padding-bottom: 60px;">
+        <div class="container">
+            <div class="audit-banner">
+                <div>
+                    <h3>Get a free content audit of your brand.</h3>
+                    <p>We'll review your emails, ads, landing pages, and product copy. You'll get a scorecard with specific fixes and revenue opportunities. No strings attached.</p>
+                </div>
+                <a href="#contact" class="btn-primary">Request Your Audit</a>
             </div>
-          </div>
         </div>
+    </section>
 
-      </div>
-    </div>
-  </section>
+    <!-- SERVICES -->
+    <section class="section" id="services" style="padding-top: 40px;">
+        <div class="container">
+            <div class="section-label">What We Deliver</div>
+            <div class="section-title">Copy for every stage of your funnel.</div>
+            <div class="section-subtitle">From first impression to win-back. Conversion-focused content built specifically for DTC brands that want to grow.</div>
 
-  <!-- ── PROCESS ── -->
-  <section id="process">
-    <div class="container">
-      <div class="section-label">How It Works</div>
-      <h2 class="section-title">Simple. Fast. No hand-holding required.</h2>
-      <p class="section-sub">
-        You run a brand. You don't have time for a 3-week onboarding process or
-        a copywriter who needs your whole backstory to write one email.
-      </p>
-      <div class="process-steps">
-        <div class="process-step">
-          <div class="step-num">01</div>
-          <h3>Tell me what you need</h3>
-          <p>Fill out the contact form with your brand, your goal, and your timeline. I'll read it before we talk — no intro call needed just to get a quote.</p>
-        </div>
-        <div class="process-step">
-          <div class="step-num">02</div>
-          <h3>I research, you wait</h3>
-          <p>I dig into your brand, your competitors, and your customers before writing a single word. The copy brief usually takes longer than the actual writing.</p>
-        </div>
-        <div class="process-step">
-          <div class="step-num">03</div>
-          <h3>You get copy that converts</h3>
-          <p>First draft delivered with a notes doc explaining every major decision. Two revision rounds included. Most clients go live without needing both.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ── REVIEWS ── -->
-  <section id="reviews">
-    <div class="container">
-      <div class="section-label">Client Feedback</div>
-      <h2 class="section-title">Don't take my word for it.</h2>
-      <p class="section-sub">
-        Real words from founders and marketers who needed copy that worked —
-        and got it.
-      </p>
-      <div class="reviews-grid">
-
-        <div class="review-card">
-          <div class="stars">★★★★★</div>
-          <p class="review-text">
-            "Our welcome sequence was sitting at a 22% open rate when we hired Brad.
-            He rewrote the whole thing — subject lines, preview text, body copy —
-            and we hit 54% on email one in the first week. I've worked with three
-            copywriters in two years. None of them came close."
-          </p>
-          <div class="reviewer">
-            <div class="reviewer-avatar">JL</div>
-            <div>
-              <div class="reviewer-name">Jamie L.</div>
-              <div class="reviewer-role">Founder &mdash; Wellness DTC Brand</div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">&#9993;</div>
+                    <h3>Email Sequences</h3>
+                    <p>Welcome, abandoned cart, post-purchase, promotional, and win-back flows. Strategically sequenced to turn subscribers into repeat buyers.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#128226;</div>
+                    <h3>Paid Ad Copy</h3>
+                    <p>Facebook, Instagram, Google Search, Google PMax, and TikTok ads written around scroll-stopping hooks and copy that closes.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#127919;</div>
+                    <h3>Landing Pages</h3>
+                    <p>Product pages, collection pages, and advertorial-style pages built around real customer objections and desires.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#128241;</div>
+                    <h3>Social Media</h3>
+                    <p>Instagram captions, TikTok scripts, Twitter threads, and organic post copy that builds an audience while driving clicks.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#128220;</div>
+                    <h3>Blog &amp; SEO Content</h3>
+                    <p>SEO articles, listicles, how-to guides, and long-form content that ranks on Google and brings in organic traffic every month.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#128172;</div>
+                    <h3>SMS Marketing</h3>
+                    <p>Short, punchy text messages that drive flash sales, product launches, and re-engagement. Compliant and high-converting.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#127991;</div>
+                    <h3>Product Descriptions</h3>
+                    <p>Benefit-driven product copy, homepage sections, about page content, and collection descriptions. Every word earns its place.</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">&#127908;</div>
+                    <h3>Brand Voice</h3>
+                    <p>A messaging framework so every writer, channel, and campaign sounds like one brand. Distinct, consistent, and worth listening to.</p>
+                </div>
             </div>
-          </div>
         </div>
+    </section>
 
-        <div class="review-card">
-          <div class="stars">★★★★★</div>
-          <p class="review-text">
-            "We came for Meta ad copy and Brad ended up rewriting our entire
-            landing page too. ROAS went from 2.1× to 4.4× and we scaled to
-            $45K a month in spend. The ROI was undeniable within 30 days.
-            He's the only freelancer I've ever referred without hesitation."
-          </p>
-          <div class="reviewer">
-            <div class="reviewer-avatar">MT</div>
-            <div>
-              <div class="reviewer-name">Marcus T.</div>
-              <div class="reviewer-role">CMO &mdash; Sports Nutrition Brand</div>
+    <!-- PORTFOLIO -->
+    <section class="section section-dark" id="work">
+        <div class="container">
+            <div class="section-label">Recent Work</div>
+            <div class="section-title" style="color: var(--white);">Results from real brands.</div>
+            <div class="section-subtitle">A sample of recent projects. The copy, the context, and the numbers that came after.</div>
+
+            <div class="portfolio-grid">
+                <div class="portfolio-card">
+                    <div class="portfolio-tag">Email Sequence</div>
+                    <div class="portfolio-preview">Subject: "You left something behind (and it's selling fast)"<br><br>Hey [Name], we noticed you were checking out our [Product]. Totally understand if timing wasn't right. But here's the thing: we're almost out of stock on the shade you had in your cart...</div>
+                    <div class="portfolio-title">5-Email Abandoned Cart Flow</div>
+                    <div class="portfolio-client">Wellness CPG Brand</div>
+                    <div class="portfolio-stats">
+                        <div><div class="portfolio-stat-value">54%</div><div class="portfolio-stat-label">Open Rate</div></div>
+                        <div><div class="portfolio-stat-value">19%</div><div class="portfolio-stat-label">Recovery Rate</div></div>
+                    </div>
+                    <div class="portfolio-revenue"><div class="portfolio-stat-value">$31K</div><div class="portfolio-stat-label">60-Day Revenue</div></div>
+                </div>
+
+                <div class="portfolio-card">
+                    <div class="portfolio-tag">Paid Ads</div>
+                    <div class="portfolio-preview">Hook: "Your protein shake is lying to you."<br><br>Most supplements are 80% filler, 20% marketing. We went the other way. Every scoop of [Product] is third-party tested, zero proprietary blends, and hits within 22 minutes...</div>
+                    <div class="portfolio-title">Meta Ad Creative Suite</div>
+                    <div class="portfolio-client">Sports Nutrition Brand</div>
+                    <div class="portfolio-stats">
+                        <div><div class="portfolio-stat-value">4.4x</div><div class="portfolio-stat-label">ROAS (from 2.1x)</div></div>
+                        <div><div class="portfolio-stat-value">6</div><div class="portfolio-stat-label">Ad Variations</div></div>
+                    </div>
+                    <div class="portfolio-revenue"><div class="portfolio-stat-value">$45K</div><div class="portfolio-stat-label">Monthly Scale</div></div>
+                </div>
+
+                <div class="portfolio-card">
+                    <div class="portfolio-tag">Landing Page</div>
+                    <div class="portfolio-preview">Headline: "Clothes that last longer than the trend cycle."<br><br>We didn't set out to build a fashion brand. We set out to build something better than the alternative. Pieces you wear for years, not seasons...</div>
+                    <div class="portfolio-title">Full Sales Page Rewrite</div>
+                    <div class="portfolio-client">Sustainable Apparel Brand</div>
+                    <div class="portfolio-stats">
+                        <div><div class="portfolio-stat-value">3.9%</div><div class="portfolio-stat-label">CVR (from 1.4%)</div></div>
+                        <div><div class="portfolio-stat-value">+$18K</div><div class="portfolio-stat-label">Monthly Revenue</div></div>
+                    </div>
+                    <div class="portfolio-revenue"><div class="portfolio-stat-value">Same</div><div class="portfolio-stat-label">Ad Spend</div></div>
+                </div>
             </div>
-          </div>
         </div>
+    </section>
 
-        <div class="review-card">
-          <div class="stars">★★★★★</div>
-          <p class="review-text">
-            "Gave Brad a 48-hour turnaround and he delivered copy that sounded
-            exactly like us — but sharper. Our cart abandonment went from 8%
-            recovery to 19% after his rewrite. Clients actually ask if we have
-            an in-house writer now. We don't. We just have Brad."
-          </p>
-          <div class="reviewer">
-            <div class="reviewer-avatar">PS</div>
-            <div>
-              <div class="reviewer-name">Priya S.</div>
-              <div class="reviewer-role">Founder &mdash; Skincare DTC Brand</div>
+    <!-- PRICING -->
+    <section class="section" id="pricing">
+        <div class="container">
+            <div class="section-label">Pricing</div>
+            <div class="section-title">Simple plans. Serious output.</div>
+            <div class="section-subtitle">Pick the tier that matches where you are right now. Every plan includes a Brand Voice Bible, dedicated strategist, and two revision rounds per deliverable.</div>
+
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="pricing-tier">Starter</div>
+                    <div class="pricing-price">$3,000<span>/mo</span></div>
+                    <div class="pricing-desc">Content system setup plus 20 deliverables per month. Perfect for brands just getting started with professional copy.</div>
+                    <ul class="pricing-features">
+                        <li>20 content deliverables per month</li>
+                        <li>Brand Voice Bible setup</li>
+                        <li>Email sequences (welcome, cart, post-purchase)</li>
+                        <li>Ad copy for 1 platform</li>
+                        <li>1 landing page per month</li>
+                        <li>Monthly performance report</li>
+                        <li>48-hour turnaround available</li>
+                        <li>2 revision rounds per piece</li>
+                    </ul>
+                    <a href="#contact" class="pricing-btn pricing-btn-outline">Get Started</a>
+                </div>
+
+                <div class="pricing-card featured">
+                    <div class="pricing-popular">Most Popular</div>
+                    <div class="pricing-tier">Growth</div>
+                    <div class="pricing-price">$5,000<span>/mo</span></div>
+                    <div class="pricing-desc">Full content engine plus 40 deliverables per month. For brands ready to scale every channel.</div>
+                    <ul class="pricing-features">
+                        <li>40 content deliverables per month</li>
+                        <li>Everything in Starter</li>
+                        <li>Ad copy for all platforms (Meta, Google, TikTok)</li>
+                        <li>Blog/SEO content (4 articles/month)</li>
+                        <li>SMS campaign copy</li>
+                        <li>Social media content</li>
+                        <li>Product descriptions</li>
+                        <li>Conversion optimization recommendations</li>
+                    </ul>
+                    <a href="#contact" class="pricing-btn pricing-btn-primary">Get Started</a>
+                </div>
+
+                <div class="pricing-card">
+                    <div class="pricing-tier">Scale</div>
+                    <div class="pricing-price">$10,000<span>/mo</span></div>
+                    <div class="pricing-desc">Everything plus a dedicated strategist and unlimited revisions. For brands doing $1M+ that need a content partner, not a vendor.</div>
+                    <ul class="pricing-features">
+                        <li>Unlimited content deliverables</li>
+                        <li>Everything in Growth</li>
+                        <li>Dedicated content strategist</li>
+                        <li>Unlimited revisions</li>
+                        <li>Priority 24-hour turnaround</li>
+                        <li>Monthly content strategy sessions</li>
+                        <li>Competitor content monitoring</li>
+                        <li>Quarterly content audits</li>
+                    </ul>
+                    <a href="#contact" class="pricing-btn pricing-btn-outline">Get Started</a>
+                </div>
             </div>
-          </div>
         </div>
+    </section>
 
-      </div>
-    </div>
-  </section>
+    <!-- PROCESS -->
+    <section class="section" id="process" style="background: var(--light2);">
+        <div class="container">
+            <div class="section-label">How It Works</div>
+            <div class="section-title">Simple. Fast. No hand-holding required.</div>
+            <div class="section-subtitle">You run a brand. You don't have time for a 3-week onboarding process or a copywriter who needs your whole backstory to write one email.</div>
 
-  <!-- ── CONTACT ── -->
-  <section id="contact">
-    <div class="container">
-      <div style="text-align:center; margin-bottom: 2.5rem;">
-        <div class="availability-badge">
-          <span class="availability-dot"></span>
-          Accepting new clients &mdash; Q2 2026
-        </div>
-        <div class="section-label">Get In Touch</div>
-        <h2 class="section-title">Let's talk about your brand.</h2>
-        <p class="section-sub" style="margin: 0 auto 0;">
-          Tell me what you're working on. I read every message and respond
-          within 24 hours — usually faster.
-        </p>
-      </div>
-
-      <div class="contact-layout">
-        <div class="contact-left">
-          <h3>What to expect</h3>
-          <ul class="contact-expect">
-            <li>Response within 24 hours, no automated reply</li>
-            <li>Short intro call to make sure we're a fit — no sales pitch</li>
-            <li>Detailed proposal and timeline within 48 hours of the call</li>
-            <li>First draft in as little as 3 business days for most projects</li>
-            <li>Two rounds of revisions included on every engagement</li>
-          </ul>
-        </div>
-
-        <div class="contact-card">
-          {% if sent %}
-            <div class="sent-msg">
-              ✓ Message received. I'll be in touch within 24 hours.
+            <div class="process-grid">
+                <div class="process-step">
+                    <div class="process-number">01</div>
+                    <h3>Tell us what you need</h3>
+                    <p>Fill out the contact form with your brand, your goal, and your timeline. We read it before we talk. No intro call needed just to get a quote.</p>
+                </div>
+                <div class="process-step">
+                    <div class="process-number">02</div>
+                    <h3>We build your Brand Voice</h3>
+                    <p>Quick questionnaire, then we create your Brand Voice Bible. Every piece of content we write will sound like your brand, not ours.</p>
+                </div>
+                <div class="process-step">
+                    <div class="process-number">03</div>
+                    <h3>Content engine turns on</h3>
+                    <p>Your monthly deliverables start flowing. Emails, ads, landing pages, blog posts. All on schedule, all on brand, all built to convert.</p>
+                </div>
+                <div class="process-step">
+                    <div class="process-number">04</div>
+                    <h3>You get results that compound</h3>
+                    <p>Monthly reports show you what's working. We optimize based on real data. Your content gets sharper every month.</p>
+                </div>
             </div>
-          {% endif %}
+        </div>
+    </section>
 
-          {% with messages = get_flashed_messages(with_categories=true) %}
-            {% for category, message in messages %}
-              <div class="flash-error">{{ message }}</div>
-            {% endfor %}
-          {% endwith %}
+    <!-- REVIEWS -->
+    <section class="section section-dark" id="reviews">
+        <div class="container">
+            <div class="section-label">Client Feedback</div>
+            <div class="section-title" style="color: var(--white);">Don't take our word for it.</div>
+            <div class="section-subtitle">Real words from founders and marketers who needed copy that worked and got it.</div>
 
-          <form method="POST" action="{{ url_for('landing.contact') }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <!-- Honeypot: bots fill this, humans don't -->
-            <div class="hp-field" aria-hidden="true">
-              <label for="url">Website</label>
-              <input type="text" id="url" name="url" autocomplete="off" tabindex="-1" />
+            <div class="reviews-grid">
+                <div class="review-card">
+                    <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <div class="review-text">"Our welcome sequence was sitting at a 22% open rate when we hired CopyDTC. They rewrote the whole thing and we hit 54% on email one in the first week. I've worked with three copywriters in two years. None of them came close."</div>
+                    <div class="review-author">
+                        <div class="review-avatar">JL</div>
+                        <div><div class="review-name">Jamie L.</div><div class="review-role">Founder, Wellness DTC Brand</div></div>
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <div class="review-text">"We came for Meta ad copy and they ended up rewriting our entire landing page too. ROAS went from 2.1x to 4.4x and we scaled to $45K a month in spend. The ROI was undeniable within 30 days."</div>
+                    <div class="review-author">
+                        <div class="review-avatar">MT</div>
+                        <div><div class="review-name">Marcus T.</div><div class="review-role">CMO, Sports Nutrition Brand</div></div>
+                    </div>
+                </div>
+
+                <div class="review-card">
+                    <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <div class="review-text">"48-hour turnaround and they delivered copy that sounded exactly like us but sharper. Our cart abandonment went from 8% recovery to 19% after the rewrite. Clients actually ask if we have an in-house writer now."</div>
+                    <div class="review-author">
+                        <div class="review-avatar">PS</div>
+                        <div><div class="review-name">Priya S.</div><div class="review-role">Founder, Skincare DTC Brand</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="section" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <div class="section-label">About CopyDTC</div>
+                    <h2>Built for DTC. Nothing else.</h2>
+                    <p>CopyDTC exists because most copywriters don't understand ecommerce. They write pretty words that don't sell. We write ugly-effective copy that moves product.</p>
+                    <p>We use AI-powered systems to deliver content faster and more consistently than any traditional agency. That means you get better output at a fraction of the cost and turnaround time. No bloated team. No overhead. Just results.</p>
+                    <p>Every template we use, every email we write, every ad we create is built on frameworks tested across 40+ DTC brands. We know what works because we've measured it.</p>
+                </div>
+                <div class="about-highlights">
+                    <div class="about-highlight"><div class="about-highlight-number">40+</div><div class="about-highlight-label">DTC brands served</div></div>
+                    <div class="about-highlight"><div class="about-highlight-number">25+</div><div class="about-highlight-label">Content templates</div></div>
+                    <div class="about-highlight"><div class="about-highlight-number">$3M+</div><div class="about-highlight-label">Revenue driven</div></div>
+                    <div class="about-highlight"><div class="about-highlight-number">48hr</div><div class="about-highlight-label">Avg. turnaround</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section-dark" id="faq">
+        <div class="container">
+            <div style="text-align: center;">
+                <div class="section-label">FAQ</div>
+                <div class="section-title" style="color: var(--white); margin-bottom: 48px;">Questions you're probably asking.</div>
             </div>
 
-            <div class="form-field">
-              <label for="name">Your name</label>
-              <input type="text" id="name" name="name" placeholder="Jane Smith"
-                     autocomplete="name" maxlength="120" required />
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">How is this different from hiring a freelance copywriter?</div>
+                    <div class="faq-answer">Freelancers write individual pieces. We build content systems. You get a Brand Voice Bible, monthly content calendar, performance tracking, and a full pipeline of deliverables across every channel. It's a content engine, not a gig.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What kinds of DTC brands do you work with?</div>
+                    <div class="faq-answer">We work best with DTC brands doing $500K to $10M in annual revenue. That includes skincare, supplements, apparel, CPG, food and beverage, fitness, pet products, and home goods. If you sell direct to consumers online, we can help.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What does "20 deliverables" actually mean?</div>
+                    <div class="faq-answer">A deliverable is one piece of content: one email, one ad variation, one blog post, one landing page, one product description. Your monthly allocation is flexible. Want 10 emails and 10 ads? Done. Want 5 blog posts, 10 social posts, and 5 emails? Also done.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">How fast do you deliver?</div>
+                    <div class="faq-answer">Standard turnaround is 3-5 business days for most deliverables. Rush turnaround (48 hours) is available on all plans. Blog posts and landing pages may take slightly longer due to research requirements.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Do you use AI to write the copy?</div>
+                    <div class="faq-answer">We use AI as a production tool, yes. But every piece goes through human review, brand voice verification, and quality checks before it reaches you. AI lets us deliver faster and more consistently. The strategy, voice calibration, and quality control are human.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What if I'm not happy with the copy?</div>
+                    <div class="faq-answer">Every deliverable includes two rounds of revisions. On the Scale plan, revisions are unlimited. We also do a Brand Voice Bible calibration in your first week so we get the tone right from the start. Most clients approve first drafts without changes.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Is there a contract or minimum commitment?</div>
+                    <div class="faq-answer">We work on a month-to-month basis. No long-term contracts. We recommend at least 3 months to see compounding results, but you're free to cancel anytime with 30 days notice.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What's included in the free content audit?</div>
+                    <div class="faq-answer">We review your current emails, ads, landing pages, and product copy. You get a scorecard rating each channel, specific recommendations for improvement, and estimated revenue impact. It's a real audit with real insights, not a sales pitch disguised as value.</div>
+                </div>
             </div>
-            <div class="form-field">
-              <label for="email">Email address</label>
-              <input type="email" id="email" name="email" placeholder="jane@yourbrand.com"
-                     autocomplete="email" maxlength="254" required />
-            </div>
-            <div class="form-field">
-              <label for="message">What do you need?</label>
-              <textarea id="message" name="message" rows="4" maxlength="2000" required
-                placeholder="e.g. We sell sustainable skincare. We need a 5-email welcome flow and a landing page rewrite — ASAP."></textarea>
-            </div>
-            <button type="submit" class="btn-submit">Send Message &rarr;</button>
-          </form>
         </div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ── FOOTER ── -->
-  <footer>
-    <div class="footer-inner">
-      <span>&copy; 2026 CopyDTC</span>
-      <div>
-        <a href="#services">Services</a>
-        <a href="#portfolio">Work</a>
-        <a href="#process">Process</a>
-        <a href="#reviews">Reviews</a>
-        <a href="/about">About</a>
-        <a href="#contact">Contact</a>
-        <a href="/privacy">Privacy Policy</a>
-        <a href="/portal/login">Login</a>
-      </div>
-    </div>
-  </footer>
+    <!-- CONTACT -->
+    <section class="section" id="contact">
+        <div class="container" style="text-align: center;">
+            <div class="availability-badge">
+                <div class="availability-dot"></div>
+                <span>Accepting New Clients</span>
+            </div>
+            <div class="section-label">Get In Touch</div>
+            <div class="section-title">Let's talk about your brand.</div>
+            <p style="font-size: 17px; color: var(--gray); max-width: 560px; margin: 0 auto 48px; line-height: 1.7;">Tell us what you're working on. We read every message and respond within 24 hours. Usually faster.</p>
+        </div>
 
-  <script>
-    (function () {
-      var btn  = document.getElementById('hamburger');
-      var menu = document.getElementById('mobileMenu');
-      if (!btn || !menu) return;
+        <div class="container">
+            <div class="contact-grid">
+                <div class="contact-expect">
+                    <h3>What to expect</h3>
+                    <ul style="list-style: none;">
+                        <li><span class="check-icon">&#10003;</span> Response within 24 hours, no automated reply</li>
+                        <li><span class="check-icon">&#10003;</span> Short intro call to make sure we're a fit. No sales pitch</li>
+                        <li><span class="check-icon">&#10003;</span> Free content audit of your current copy</li>
+                        <li><span class="check-icon">&#10003;</span> Detailed proposal and timeline within 48 hours of the call</li>
+                        <li><span class="check-icon">&#10003;</span> First draft in as little as 3 business days</li>
+                        <li><span class="check-icon">&#10003;</span> Two rounds of revisions on every engagement</li>
+                    </ul>
+                </div>
 
-      function openMenu() {
-        menu.classList.add('open');
-        btn.classList.add('open');
-        btn.setAttribute('aria-expanded', 'true');
-        menu.setAttribute('aria-hidden', 'false');
-      }
+                <div class="contact-form">
+                    {% if sent %}
+                      <div class="sent-msg">
+                        &#10003; Message received. We'll be in touch within 24 hours.
+                      </div>
+                    {% endif %}
 
-      function closeMenu() {
-        menu.classList.remove('open');
-        btn.classList.remove('open');
-        btn.setAttribute('aria-expanded', 'false');
-        menu.setAttribute('aria-hidden', 'true');
-      }
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% for category, message in messages %}
+                        <div class="flash-error">{{ message }}</div>
+                      {% endfor %}
+                    {% endwith %}
 
-      btn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        menu.classList.contains('open') ? closeMenu() : openMenu();
-      });
+                    <form method="POST" action="{{ url_for('landing.contact') }}">
+                        <!-- Honeypot -->
+                        <div class="hp-field" aria-hidden="true">
+                            <label for="url">Website</label>
+                            <input type="text" id="url" name="url" autocomplete="off" tabindex="-1" />
+                        </div>
 
-      menu.querySelectorAll('a').forEach(function (link) {
-        link.addEventListener('click', closeMenu);
-      });
+                        <div class="form-group">
+                            <label for="name">Your name</label>
+                            <input type="text" id="name" name="name" placeholder="Jane Smith" autocomplete="name" maxlength="120" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email address</label>
+                            <input type="email" id="email" name="email" placeholder="jane@yourbrand.com" autocomplete="email" maxlength="254" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="interest">What are you interested in?</label>
+                            <select id="interest" name="interest">
+                                <option value="">Select one...</option>
+                                <option value="Free Content Audit">Free Content Audit</option>
+                                <option value="Starter Plan ($3K/mo)">Starter Plan ($3K/mo)</option>
+                                <option value="Growth Plan ($5K/mo)">Growth Plan ($5K/mo)</option>
+                                <option value="Scale Plan ($10K/mo)">Scale Plan ($10K/mo)</option>
+                                <option value="Custom Project">Custom Project</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Tell us about your brand and what you need</label>
+                            <textarea id="message" name="message" maxlength="2000" placeholder="e.g. We sell sustainable skincare. We need a 5-email welcome flow, ad copy for Meta, and a landing page rewrite. Our budget is around $5K/mo."></textarea>
+                        </div>
+                        <button type="submit" class="form-submit">Send Message &#8594;</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
 
-      document.addEventListener('click', function (e) {
-        if (!btn.contains(e.target) && !menu.contains(e.target)) closeMenu();
-      });
+    <!-- FOOTER -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-copy">&copy; 2026 CopyDTC</div>
+                <ul class="footer-links">
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#work">Work</a></li>
+                    <li><a href="#pricing">Pricing</a></li>
+                    <li><a href="#process">Process</a></li>
+                    <li><a href="#reviews">Reviews</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="/privacy">Privacy</a></li>
+                    <li><a href="/portal/login">Login</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
 
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeMenu();
-      });
-    })();
-  </script>
+    <script>
+        document.querySelectorAll('.faq-question').forEach(function(q) {
+            q.addEventListener('click', function() {
+                this.parentElement.classList.toggle('open');
+            });
+        });
+    </script>
+
 </body>
 </html>

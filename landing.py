@@ -32,7 +32,7 @@ def privacy():
     return render_template("privacy.html")
 
 
-def _send_gmail_notification(name, email, website, services, budget, message):
+def _send_gmail_notification(name, email, interest, message):
     """Send contact form notification via Gmail SMTP."""
     gmail_user = os.environ.get("GMAIL_USER", "")
     gmail_pass = os.environ.get("GMAIL_APP_PASSWORD", "")
@@ -44,9 +44,7 @@ def _send_gmail_notification(name, email, website, services, budget, message):
     body = "\n".join([
         f"Name: {name}",
         f"Email: {email}",
-        f"Website: {website or 'Not provided'}",
-        f"Services: {services or 'None selected'}",
-        f"Budget: {budget or 'Not specified'}",
+        f"Interested in: {interest or 'Not specified'}",
         "",
         "Message:",
         message or "No message provided",
@@ -72,10 +70,7 @@ def contact():
 
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip()
-    website = request.form.get("website", "").strip()
-    services_list = request.form.getlist("services")
-    services = ", ".join(services_list) if services_list else ""
-    budget = request.form.get("budget", "").strip()
+    interest = request.form.get("interest", "").strip()
     message = request.form.get("message", "").strip()
 
     if not name or not email:
@@ -86,15 +81,14 @@ def contact():
         flash("Please enter a valid email address.", "error")
         return redirect(url_for("landing.index") + "#contact")
 
-    db_module.save_contact(name, email, message, website=website,
-                           services=services, budget=budget)
+    db_module.save_contact(name, email, message, services=interest)
     current_app.logger.info(
-        "Contact form submission — name: %r  email: %r  services: %r",
-        name, email, services,
+        "Contact form submission — name: %r  email: %r  interest: %r",
+        name, email, interest,
     )
 
     try:
-        _send_gmail_notification(name, email, website, services, budget, message)
+        _send_gmail_notification(name, email, interest, message)
     except Exception as exc:
         current_app.logger.error("Gmail notification failed: %s", exc)
 
