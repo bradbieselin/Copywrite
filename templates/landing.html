@@ -742,6 +742,7 @@
             .audit-banner { flex-direction: column; text-align: center; padding: 32px; }
             .footer-content { flex-direction: column; gap: 16px; text-align: center; }
             .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+            .footer-desktop-only { display: none; }
             .faq-item.open .faq-answer { max-height: 500px; }
             .hero-buttons { flex-direction: column; align-items: center; }
             .hero-buttons .btn-primary,
@@ -1221,8 +1222,8 @@
                     <li><a href="#reviews">Reviews</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#contact">Contact</a></li>
-                    <li><a href="/privacy">Privacy</a></li>
-                    <li><a href="/portal/login">Login</a></li>
+                    <li class="footer-desktop-only"><a href="/privacy">Privacy</a></li>
+                    <li class="footer-desktop-only"><a href="/portal/login">Login</a></li>
                 </ul>
             </div>
         </div>
