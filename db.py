@@ -36,16 +36,22 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 name       TEXT NOT NULL,
                 email      TEXT NOT NULL,
+                website    TEXT NOT NULL DEFAULT '',
+                services   TEXT NOT NULL DEFAULT '',
+                budget     TEXT NOT NULL DEFAULT '',
                 message    TEXT NOT NULL
             );
         """)
 
 
-def save_contact(name: str, email: str, message: str) -> int:
+def save_contact(name: str, email: str, message: str,
+                  website: str = "", services: str = "", budget: str = "") -> int:
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.execute(
-            "INSERT INTO contact_submissions (name, email, message) VALUES (?,?,?)",
-            (name.strip(), email.strip(), message.strip()),
+            "INSERT INTO contact_submissions (name, email, website, services, budget, message) "
+            "VALUES (?,?,?,?,?,?)",
+            (name.strip(), email.strip(), website.strip(),
+             services.strip(), budget.strip(), message.strip()),
         )
         return cur.lastrowid
 
@@ -117,6 +123,17 @@ def init_portal_db():
                 uploaded_by       INTEGER NOT NULL REFERENCES portal_users(id)
             );
         """)
+
+        # Migrate: add new contact_submissions columns for existing databases.
+        contact_cols = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(contact_submissions)").fetchall()
+        }
+        for col in ("website", "services", "budget"):
+            if col not in contact_cols:
+                conn.execute(
+                    f"ALTER TABLE contact_submissions ADD COLUMN {col} TEXT NOT NULL DEFAULT ''"
+                )
 
         # Migrate: add `draft` column to briefs for existing databases.
         brief_cols = {
