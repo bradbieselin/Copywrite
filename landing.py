@@ -3,6 +3,7 @@
 import os
 import re
 import smtplib
+import threading
 from email.mime.text import MIMEText
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 
@@ -33,7 +34,7 @@ def privacy():
 
 
 def _send_gmail_notification(name, email, interest, message):
-    """Send contact form notification via Gmail SMTP."""
+    """Send contact form notification via Gmail SMTP in a background thread."""
     gmail_user = os.environ.get("GMAIL_USER", "")
     gmail_pass = os.environ.get("GMAIL_APP_PASSWORD", "")
     contact_email = os.environ.get("CONTACT_EMAIL", gmail_user)
@@ -56,9 +57,15 @@ def _send_gmail_notification(name, email, interest, message):
     msg["To"] = contact_email
     msg["Reply-To"] = email
 
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(gmail_user, gmail_pass)
-        server.send_message(msg)
+    def _send():
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
+                server.login(gmail_user, gmail_pass)
+                server.send_message(msg)
+        except Exception:
+            pass  # logged in the caller; fire-and-forget
+
+    threading.Thread(target=_send, daemon=True).start()
 
 
 @landing_bp.route("/contact", methods=["POST"])
@@ -87,9 +94,7 @@ def contact():
         name, email, interest,
     )
 
-    try:
-        _send_gmail_notification(name, email, interest, message)
-    except Exception as exc:
-        current_app.logger.error("Gmail notification failed: %s", exc)
+    # Fire-and-forget in background thread — never blocks the response
+    _send_gmail_notification(name, email, interest, message)
 
     return redirect(url_for("landing.index") + "?sent=1#contact")
