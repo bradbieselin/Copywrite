@@ -1,0 +1,2 @@
+Month,Client Name,Tier,Monthly Rate,Invoice Sent Date,Invoice Paid Date,Amount Received,Expenses (Contractors),Expenses (Tools),Expenses (Other),Net Revenue,Notes
+[MONTH],[CLIENT],[Starter/Growth/Scale],[$X,XXX],[DATE],[DATE],[$X,XXX],[$XXX],[$XXX],[$XXX],[$X,XXX],[NOTES]
