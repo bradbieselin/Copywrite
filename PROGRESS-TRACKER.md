@@ -1,7 +1,7 @@
 # CopyDTC Progress Tracker
 > Last updated: March 5, 2026
 
-## Phase 1: Foundation (Weeks 1-4) — ~80% Complete
+## Phase 1: Foundation (Weeks 1-4) — ~95% Complete
 
 ### Week 1: Build Your Delivery Machine
 - [x] AI workflow system (25 prompt templates) — agency/client-work/
@@ -14,7 +14,7 @@
 - [x] Client portal (password-protected) — portal/
 - [ ] LLC formation (~$150, offline task)
 - [ ] Stripe account for payments (offline task)
-- [ ] Service agreement / contract template
+- [x] Service agreement / contract template — agency/operations/business-docs/
 
 ### Weeks 3-4: Outreach Engine
 - [x] Instagram DTC scraper — instagram_dtc_scraper.py
@@ -22,8 +22,8 @@
 - [x] Google Ads prompt tool — agency/tools/
 - [x] Business docs (invoice, questionnaire, NDA) — agency/operations/
 - [x] KPI definitions + reporting templates — agency/operations/
-- [ ] Cold email sequences (partially started in agency/sales/)
-- [ ] Free Audit as polished PDF lead magnet
+- [x] Cold email sequences — agency/sales/outreach/
+- [x] Free Audit PDF lead magnet — agency/sales/audits/generate_audit_pdf.py
 
 ## Phase 2: First Clients (Months 2-3) — ~20% Complete
 - [ ] Cold outreach blitz (50 msgs/day) — tools built, execution not started
