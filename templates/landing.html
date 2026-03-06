@@ -26,7 +26,7 @@
             --font: -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
         }
 
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 
         body {
             font-family: var(--font);
@@ -721,16 +721,57 @@
                 border-bottom: 1px solid rgba(91,91,248,0.15);
             }
 
-            .hero { padding: 120px 0 80px; }
+            .nav-links.open a { padding: 10px 0; font-size: 16px; }
+
+            .section { padding: 64px 0; }
+            .hero { padding: 120px 0 64px; }
+            .hero p { font-size: 16px; }
             .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+            .stat-number { font-size: 32px; }
             .services-grid { grid-template-columns: 1fr; }
             .portfolio-grid { grid-template-columns: 1fr; }
+            .portfolio-preview { min-height: auto; }
             .reviews-grid { grid-template-columns: 1fr; }
             .process-grid { grid-template-columns: 1fr; }
+            .process-number { font-size: 40px; }
+            .pricing-price { font-size: 40px; }
             .about-content { grid-template-columns: 1fr; gap: 32px; }
+            .about-highlights { grid-template-columns: 1fr 1fr; gap: 16px; }
             .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+            .contact-form { padding: 24px; }
             .audit-banner { flex-direction: column; text-align: center; padding: 32px; }
             .footer-content { flex-direction: column; gap: 16px; text-align: center; }
+            .footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
+            .footer-desktop-only { display: none; }
+            .faq-item.open .faq-answer { max-height: 500px; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .hero-buttons .btn-primary,
+            .hero-buttons .btn-secondary { width: 100%; max-width: 320px; text-align: center; }
+            .section-subtitle { margin-bottom: 32px; }
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 0 16px; }
+            .section { padding: 48px 0; }
+            .hero { padding: 100px 0 48px; }
+            .hero h1 { font-size: 32px; }
+            .hero-badge { font-size: 11px; padding: 6px 16px; margin-bottom: 24px; }
+            .hero p { font-size: 15px; }
+            .stats { padding: 32px 0; }
+            .stat-number { font-size: 28px; }
+            .stat-label { font-size: 10px; }
+            .service-card { padding: 24px 20px; }
+            .pricing-card { padding: 28px 20px; }
+            .pricing-price { font-size: 36px; }
+            .process-number { font-size: 36px; }
+            .review-card { padding: 24px; }
+            .about-highlights { grid-template-columns: 1fr; }
+            .about-highlight { padding: 20px; }
+            .contact-form { padding: 20px; }
+            .audit-banner { padding: 24px; }
+            .audit-banner h3 { font-size: 20px; }
+            .section-title { margin-bottom: 12px; }
+            .faq-question { font-size: 15px; }
         }
     </style>
 </head>
@@ -751,6 +792,7 @@
                 <li><a href="#reviews">Reviews</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#contact">Contact</a></li>
+                <li><a href="/privacy">Privacy</a></li>
                 <li><a href="/portal/login" class="nav-cta">Login</a></li>
             </ul>
         </div>
@@ -1181,8 +1223,8 @@
                     <li><a href="#reviews">Reviews</a></li>
                     <li><a href="#about">About</a></li>
                     <li><a href="#contact">Contact</a></li>
-                    <li><a href="/privacy">Privacy</a></li>
-                    <li><a href="/portal/login">Login</a></li>
+                    <li class="footer-desktop-only"><a href="/privacy">Privacy</a></li>
+                    <li class="footer-desktop-only"><a href="/portal/login">Login</a></li>
                 </ul>
             </div>
         </div>
@@ -1192,6 +1234,13 @@
         document.querySelectorAll('.faq-question').forEach(function(q) {
             q.addEventListener('click', function() {
                 this.parentElement.classList.toggle('open');
+            });
+        });
+
+        // Close mobile nav when a link is clicked
+        document.querySelectorAll('.nav-links a').forEach(function(link) {
+            link.addEventListener('click', function() {
+                document.querySelector('.nav-links').classList.remove('open');
             });
         });
     </script>
