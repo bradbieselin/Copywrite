@@ -334,6 +334,11 @@
     .mobile-menu ul li:last-child a { border-bottom: none; }
     .mobile-menu ul li a:hover { color: var(--indigo); background: #f8f8ff; }
 
+    .mobile-menu ul li a.mobile-login {
+      color: var(--indigo);
+      font-weight: 600;
+    }
+
     /* ── RESPONSIVE ── */
     @media (max-width: 767px) {
       .about-section {
@@ -376,9 +381,8 @@
       <li><a href="/portal/login" class="btn-login">Login</a></li>
     </ul>
 
-    <!-- Mobile: Login + Hamburger -->
+    <!-- Mobile: Hamburger -->
     <div class="nav-mobile-right">
-      <a href="/portal/login" class="btn-login">Login</a>
       <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
         <span></span>
         <span></span>
@@ -396,6 +400,7 @@
       <li><a href="/#reviews">Reviews</a></li>
       <li><a href="/about">About</a></li>
       <li><a href="/#contact">Contact</a></li>
+      <li><a href="/portal/login" class="mobile-login">Login</a></li>
     </ul>
   </div>
 
